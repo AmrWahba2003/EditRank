@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رفع فيديو | EditRank</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    input, select, textarea, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+    button {
+      background: #2575fc;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover { background: #0053ba; }
+    button:disabled { background: #999; cursor: not-allowed; }
+    .timer { position: absolute; top: -25px; right: 0; font-size: 0.9rem; color: #555; }
+  </style>
+</head>
+<body>
+  <form id="uploadForm">
+    <div class="timer" id="timer">00:00</div>
+    <h2>رفع فيديو جديد</h2>
+
+    <input type="text" name="title" placeholder="عنوان الفيديو" required>
+    <textarea name="description" placeholder="وصف الفيديو" rows="3"></textarea>
+
+    <select name="category" id="categorySelect" required>
+      <option value="">اختر الفئة</option>
+    </select>
+
+    <select name="subcategory" id="subcategorySelect" required>
+      <option value="">اختر الفئة الفرعية</option>
+    </select>
+
+    <input type="file" name="video" accept="video/*" required>
+    <button type="submit" id="uploadBtn">رفع الفيديو</button>
+  </form>
+
+  <script>
+    const token = localStorage.getItem('jwt');
+    if (!token) window.location.href = '/';
+
+    const form = document.getElementById('uploadForm');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const timerEl = document.getElementById('timer');
+    const categorySelect = document.getElementById('categorySelect');
+    const subcategorySelect = document.getElementById('subcategorySelect');
+
+    // جلب الفئات من السيرفر
+    async function loadCategories() {
+      try {
+        const res = await fetch('/categories');
+        const categories = await res.json();
+
+        categories.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat.name;
+          option.textContent = cat.name;
+          categorySelect.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Error loading categories:', err);
+      }
+    }
+
+    // عند اختيار فئة، عرض الفئات الفرعية
+    categorySelect.addEventListener('change', async () => {
+      const selected = categorySelect.value;
+      subcategorySelect.innerHTML = '<option value="">اختر الفئة الفرعية</option>'; // إعادة تعيين
+
+      if (!selected) return;
+
+      try {
+        const res = await fetch('/categories');
+        const categories = await res.json();
+        const category = categories.find(c => c.name === selected);
+
+        if (category && category.subcategories) {
+          category.subcategories.forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub;
+            option.textContent = sub;
+            subcategorySelect.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading subcategories:', err);
+      }
+    });
+
+    loadCategories(); // تحميل الفئات عند فتح الصفحة
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'جارٍ الرفع...';
+
+      let seconds = 0;
+      timerEl.textContent = '00:00';
+      const interval = setInterval(() => {
+        seconds++;
+        const mins = String(Math.floor(seconds / 60)).padStart(2,'0');
+        const secs = String(seconds % 60).padStart(2,'0');
+        timerEl.textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch('/videos/upload', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData
+        });
+
+        clearInterval(interval);
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('تم رفع الفيديو بنجاح!');
+          window.location.href = 'home.html';
+        } else {
+          alert(data.error || 'حدث خطأ أثناء رفع الفيديو');
+          uploadBtn.disabled = false;
+          uploadBtn.textContent = 'رفع الفيديو';
+          timerEl.textContent = '00:00';
+        }
+      } catch (err) {
+        console.error(err);
+        clearInterval(interval);
+        alert('حدث خطأ أثناء رفع الفيديو');
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'رفع الفيديو';
+        timerEl.textContent = '00:00';
+      }
+    });
+  </script>
+</body>
+</html>

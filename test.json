@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Feathers API Full Collection (form-data, JWT)",
+    "_postman_id": "feathers-full-formdata",
+    "description": "All routes for Users and Videos with JWT authentication, using form-data. userId is extracted from JWT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "John Doe" },
+            { "key": "email", "value": "john@example.com" },
+            { "key": "googleId", "value": "google123" },
+            { "key": "avatar", "value": "https://example.com/avatar.jpg" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/users", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users"] }
+      }
+    },
+    {
+      "name": "Get All Users",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/users", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users"] }
+      }
+    },
+    {
+      "name": "Get Single User with Videos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/users/<USER_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users", "<USER_ID>"] }
+      }
+    },
+    {
+      "name": "Update User",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "John Doe Updated" },
+            { "key": "avatar", "value": "https://example.com/avatar2.jpg" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/users/<USER_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users", "<USER_ID>"] }
+      }
+    },
+    {
+      "name": "Remove User (and Videos)",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/users/<USER_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users", "<USER_ID>"] }
+      }
+    },
+    {
+      "name": "Get My Videos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/users/me/videos", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users", "me", "videos"] }
+      }
+    },
+    {
+      "name": "Get My Liked Videos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/users/me/liked", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["users", "me", "liked"] }
+      }
+    },
+    {
+      "name": "Create Video",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "title", "value": "My Video" },
+            { "key": "description", "value": "Sample description" },
+            { "key": "category", "value": "Entertainment" },
+            { "key": "subcategory", "value": "Comedy" },
+            { "key": "url", "value": "https://res.cloudinary.com/yourcloud/video.mp4" },
+            { "key": "thumbnail", "value": "https://res.cloudinary.com/yourcloud/thumb.jpg" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos"] }
+      }
+    },
+    {
+      "name": "Get All Videos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/videos", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos"] }
+      }
+    },
+    {
+      "name": "Get Video By ID",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/videos/<VIDEO_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "<VIDEO_ID>"] }
+      }
+    },
+    {
+      "name": "Update Video",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "title", "value": "Updated Video Title" },
+            { "key": "description", "value": "Updated description" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos/<VIDEO_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "<VIDEO_ID>"] }
+      }
+    },
+    {
+      "name": "Remove Video",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "url": { "raw": "http://localhost:3030/videos/<VIDEO_ID>", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "<VIDEO_ID>"] }
+      }
+    },
+    {
+      "name": "Like Video",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "videoId", "value": "<VIDEO_ID>" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos/like", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "like"] }
+      }
+    },
+    {
+      "name": "Unlike Video",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "videoId", "value": "<VIDEO_ID>" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos/unlike", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "unlike"] }
+      }
+    },
+    {
+      "name": "Get Videos By Category",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "category", "value": "Entertainment" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos/category", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "category"] }
+      }
+    },
+    {
+      "name": "Get Videos By Subcategory",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer <YOUR_JWT_TOKEN>" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "subcategory", "value": "Comedy" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3030/videos/subcategory", "protocol": "http", "host": ["localhost"], "port": "3030", "path": ["videos", "subcategory"] }
+      }
+    }
+  ]
+}

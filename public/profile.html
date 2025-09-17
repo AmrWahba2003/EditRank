@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بروفايل المستخدم | EditRank</title>
+<style>
+  body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;margin:0;padding:0;color:#333}
+  header{background:#2575fc;color:#fff;padding:15px;text-align:center}
+  .profile-header{display:flex;align-items:center;gap:15px;justify-content:center;margin-top:20px}
+  .profile-header img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #2575fc}
+  .profile-header h2{margin:0}
+  .profile-header p{margin:5px 0 0;color:#eee}
+  main{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+  .video-card{background:#fff;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.1);overflow:hidden;transition:.3s}
+  .video-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.2)}
+  .media-wrap{position:relative;width:100%;padding-top:56.25%;background:#000}
+  .media-wrap video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain}
+  .content{padding:15px}
+  .content h3{margin:0 0 10px;color:#2575fc}
+  .content p{margin:0 0 8px;color:#555}
+</style>
+</head>
+<body>
+<header>
+  <h1>بروفايل المستخدم</h1>
+</header>
+
+<div class="profile-header" id="profileHeader"></div>
+<main id="videoGrid"></main>
+
+<script>
+const token = localStorage.getItem('jwt');
+if(!token){ location.href = '/'; }
+
+// الحصول على userId من الرابط
+const urlParams = new URLSearchParams(window.location.search);
+const userId = urlParams.get('userId');
+
+if(!userId){
+  document.body.innerHTML = "<p style='text-align:center;margin-top:50px'>لم يتم تحديد المستخدم.</p>";
+  throw new Error("User ID missing");
+}
+
+function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function createVideoCard(video){
+  const card=document.createElement('div');
+  card.className='video-card';
+  card.innerHTML=`
+    <div class="media-wrap"><video src="${escapeHtml(video.url||'')}" controls></video></div>
+    <div class="content">
+      <h3>${escapeHtml(video.title||'')}</h3>
+      <p>${escapeHtml(video.description||'')}</p>
+      <small>التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
+    </div>`;
+  return card;
+}
+
+async function loadProfile(){
+  try{
+    const res = await fetch(`/users/${userId}`, { headers:{ Authorization:'Bearer '+token } });
+    if(!res.ok) throw new Error("فشل جلب بيانات المستخدم");
+    const user = await res.json();
+
+    // رأس البروفايل
+    const header=document.getElementById('profileHeader');
+    const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div style="width:80px;height:80px;border-radius:50%;background:#eee"></div>`;
+    header.innerHTML=`
+      ${avatar}
+      <div>
+        <h2>${escapeHtml(user.name||'مستخدم')}</h2>
+        <p>@${escapeHtml(user.username||'')}</p>
+      </div>`;
+
+    // الفيديوهات
+    const grid=document.getElementById('videoGrid');
+    grid.innerHTML='';
+    if(!user.videos || user.videos.length===0){ 
+      grid.innerHTML='<p>لا يوجد فيديوهات.</p>'; 
+      return; 
+    }
+    user.videos.forEach(v=>{
+      grid.appendChild(createVideoCard(v));
+    });
+
+  }catch(err){
+    console.error(err);
+    document.body.innerHTML="<p style='text-align:center;margin-top:50px'>حدث خطأ أثناء تحميل البروفايل.</p>";
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>
