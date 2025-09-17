@@ -35,10 +35,9 @@
   ],
   "main": "lib/client",
   "scripts": {
-    "dev": "nodemon -x ts-node src/services/index.ts", 
-    "compile": "shx rm -rf lib/ && tsc",             
-    "build": "tsc",                                 
-    "start": "node lib/services/index.js",            
+    "start": "ts-node src/services/index.ts",
+    "dev": "nodemon -x ts-node src/services/index.ts",
+    "compile": "shx rm -rf lib/ && tsc",                                              
     "seed:games": "ts-node src/seed/games.seed.ts",
     "prettier": "npx prettier \"**/*.ts\" --write",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
