@@ -64,7 +64,21 @@
   #categoryPanel select{width:100%;margin-bottom:10px;padding:6px;border-radius:6px;border:1px solid #ccc}
 
   /* Small responsive defaults (original) */
-  @media(max-width:900px){main{margin-left:60px} #categoryPanel{display:none}}
+  @media (max-width: 900px) {
+  #categoryPanel {
+    position: static; /* تصبح جزء من الصفحة وليس ثابتة */
+    width: 100%;
+    box-shadow: none;
+    border-left: none;
+    margin-bottom: 15px;
+    display: block; /* إظهارها */
+    padding: 10px;
+  }
+  main {
+    margin-left: 0;
+    padding: 20px 10px 20px;
+  }
+}
 
   /* ===== Additional responsive improvements ===== */
   @media (max-width: 900px) {
