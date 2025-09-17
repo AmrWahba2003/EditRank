@@ -38,7 +38,7 @@
     "seed:games": " ts-node src/seed/games.seed.ts",
     "dev": "nodemon -x ts-node src/index.ts",
     "compile": "shx rm -rf lib/ && tsc",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node src/services/index.ts",
     "prettier": "npx prettier \"**/*.ts\" --write",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "npm run mocha",
