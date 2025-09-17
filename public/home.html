@@ -6,7 +6,7 @@
 <title>الرئيسية | EditRank</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif}
-  body{display:flex;min-height:100vh;background:#f0f2f5;color:#333;transition:all .3s ease;flex-direction:column}
+  body{display:flex;min-height:100vh;background:#f0f2f5;color:#333;transition:all .3s ease}
 
   /* Header */
   header{position:fixed;top:0;left:0;right:0;height:60px;background:#2575fc;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 20px;z-index:100;box-shadow:0 4px 10px rgba(0,0,0,.2)}
@@ -29,8 +29,8 @@
   .no-results{padding:10px;color:#666;font-size:.9rem}
 
   /* Sidebar */
-  .sidebar{width:220px;background:#fff;border-right:1px solid #ddd;padding-top:60px;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;transition:transform .3s ease;overflow:hidden;z-index:99}
-  .sidebar.closed{transform: translateX(-100%);}
+  .sidebar{width:220px;background:#fff;border-right:1px solid #ddd;padding-top:60px;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;transition:width .3s ease;overflow:hidden;z-index:99}
+  .sidebar.closed{width:60px}
   .sidebar a{padding:15px 20px;text-decoration:none;color:#333;font-weight:700;border-left:4px solid transparent;display:flex;align-items:center;gap:10px;transition:all .3s;white-space:nowrap}
   .sidebar a:hover{background:#f9f9f9;border-left:4px solid #2575fc}
   .sidebar a span{transition:opacity .3s}
@@ -38,8 +38,8 @@
   .toggle-btn{position:absolute;top:10px;right:-15px;background:#2575fc;color:#fff;border-radius:50%;width:30px;height:30px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:101}
 
   /* Main */
-  main{margin-left:0;padding:80px 30px 30px 30px;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:25px;transition:margin-left .3s}
-  .sidebar:not(.closed) ~ main{margin-left:0}
+  main{margin-left:220px;padding:80px 30px 30px 30px;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:25px;transition:margin-left .3s}
+  .sidebar.closed ~ main{margin-left:60px}
 
   /* Video card */
   .video-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.1);display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s}
@@ -63,118 +63,27 @@
   #categoryPanel h3{margin-bottom:10px;font-size:1.1rem;color:#2575fc}
   #categoryPanel select{width:100%;margin-bottom:10px;padding:6px;border-radius:6px;border:1px solid #ccc}
 
-  /* Mobile menu button */
-  .mobile-menu-btn {display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;}
-
-  /* Mobile overlay for sidebar */
-  .sidebar-overlay {display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 98;}
-
-  /* ===== Improved responsive design ===== */
-  @media (max-width: 1024px) {
-    .sidebar {transform: translateX(-100%);}
-    .sidebar.open {transform: translateX(0); width: 220px;}
-    .sidebar-overlay.active {display: block;}
-    .mobile-menu-btn {display: block;}
-    main {padding: 70px 15px 20px;}
-  }
-
-  @media (max-width: 900px) {
-    #categoryPanel {
-      position: static;
-      width: 100%;
-      box-shadow: none;
-      border-left: none;
-      margin-bottom: 15px;
-      padding: 10px;
-      height: auto;
-    }
-    
-    header {
-      flex-wrap: wrap;
-      height: auto;
-      padding: 10px;
-    }
-    
-    .user-info {
-      order: 3;
-      width: 100%;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    
-    .search-bar {
-      width: 100%;
-    }
-    
-    .search-bar input {
-      width: 100%;
-    }
-    
-    .search-results {
-      width: 100%;
-      right: 0;
-      left: 0;
-    }
-  }
-
-  @media (max-width: 768px) {
-    header h1 {font-size: 1.2rem;}
-    main {grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding: 70px 10px 20px;}
-    .video-card h3 {font-size: 1.1rem;}
-  }
-
-  @media (max-width: 600px) {
-    header {flex-direction: row; align-items: center; height: 60px;}
-    header h1 {margin-bottom: 0; font-size: 1.1rem;}
-    .user-info {position: fixed; top: 60px; left: 0; right: 0; background: #2575fc; padding: 10px; margin-top: 0; justify-content: space-around; display: none; z-index: 99;}
-    .user-info.active {display: flex;}
-    .search-bar {width: 70%;}
-    #profileName {display: none;}
-    .mobile-menu-btn {margin-right: auto;}
-    .mobile-user-btn {display: block; background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;}
-    .desktop-user {display: none;}
-    main {grid-template-columns: 1fr; padding: 60px 10px 20px;}
-    .video-card .content {padding: 10px;}
-    .video-card h3 {font-size: 1rem;}
-    .video-card p {font-size: 0.9rem;}
-    .actions {flex-direction: column;}
-    button.btn {width: 100%; text-align: center;}
-  }
-
-  @media (max-width: 420px) {
-    .logo {width: 30px; height: 30px;}
-    #profileImg {width: 32px; height: 32px;}
-    .logout-btn, .upload-btn {padding: 6px 8px; font-size: 0.8rem;}
-    header h1 {font-size: 1rem;}
-    .search-bar input {font-size: 0.8rem;}
-    .mobile-menu-btn, .mobile-user-btn {font-size: 1.2rem;}
-  }
+  @media(max-width:900px){main{margin-left:60px} #categoryPanel{display:none}}
 </style>
 </head>
 <body>
 
 <header>
-  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
   <h1><div class="logo"></div> EditRank</h1>
-  <button class="mobile-user-btn" id="mobileUserBtn">👤</button>
-  <div class="user-info" id="userInfo">
+  <div class="user-info">
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="ابحث عن مستخدم...">
     </div>
-    <div class="desktop-user">
-      <img id="profileImg" src="" alt="صورة الحساب">
-      <span id="profileName"></span>
-      <a href="/" class="logout-btn" id="logoutBtn">تسجيل الخروج</a>
-      <a href="upload.html" class="upload-btn">رفع فيديو</a>
-    </div>
+    <img id="profileImg" src="" alt="صورة الحساب">
+    <span id="profileName"></span>
+    <a href="/" class="logout-btn" id="logoutBtn">تسجيل الخروج</a>
+    <a href="upload.html" class="upload-btn">رفع فيديو</a>
   </div>
   <div id="searchResultsContainer"></div>
 </header>
 
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
 <div class="sidebar" id="sidebar">
-  <div class="toggle-btn" id="toggleBtn">✕</div>
+  <div class="toggle-btn" id="toggleBtn">☰</div>
   <a href="#" id="profileLink">👤 <span>Profile</span></a>
   <a href="#" id="settingsLink">⚙️ <span>Settings</span></a>
   <a href="upload.html" id="uploadLink">⬆️ <span>Upload</span></a>
@@ -194,55 +103,20 @@
 <main id="videoGrid"></main>
 
 <script>
-/* ------------------ كامل الـ JS الأصلي مع التحسينات للتجاوب ------------------ */
-
 const token = localStorage.getItem('jwt');
 if(!token){ location.href = '/'; }
 
 let currentUser = {};
-try {
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  currentUser = payload;
-  document.getElementById('profileImg').src = payload.avatar || '';
-  document.getElementById('profileName').textContent = payload.name || 'مستخدم';
-} catch(e){
-  console.error('Invalid token', e);
-}
+try { 
+  const payload = JSON.parse(atob(token.split('.')[1])); 
+  currentUser = payload; 
+  document.getElementById('profileImg').src = payload.avatar || ''; 
+  document.getElementById('profileName').textContent = payload.name || 'مستخدم'; 
+} catch(e){ console.error('Invalid token', e); }
 
-// عناصر جديدة للجوال
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileUserBtn = document.getElementById('mobileUserBtn');
-const userInfo = document.getElementById('userInfo');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
 const sidebar = document.getElementById('sidebar');
+document.getElementById('toggleBtn').addEventListener('click', ()=> sidebar.classList.toggle('closed'));
 
-// فتح/إغلاق القائمة الجانبية على الجوال
-mobileMenuBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-  sidebarOverlay.classList.toggle('active');
-  document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
-});
-
-// فتح/إغلاق معلومات المستخدم على الجوال
-mobileUserBtn.addEventListener('click', () => {
-  userInfo.classList.toggle('active');
-});
-
-// إغلاق القائمة الجانبية عند النقر على overlay
-sidebarOverlay.addEventListener('click', () => {
-  sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('active');
-  document.body.style.overflow = '';
-});
-
-// تعديل وظيفة زر التبديل للأجهزة المحمولة
-document.getElementById('toggleBtn').addEventListener('click', ()=> {
-  sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('active');
-  document.body.style.overflow = '';
-});
-
-// XSS-safe helper
 function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function createVideoCard(video){
@@ -458,6 +332,8 @@ async function toggleLike(videoId, btn) {
     btn.textContent = liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
   }
 }
+
+
 
 function attachLikeButtons() {
   document.querySelectorAll('.video-card').forEach(card => {
