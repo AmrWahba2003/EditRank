@@ -41,7 +41,13 @@ export const initializeApp = async () => {
   app.use(express.static(path.join(__dirname, '../public')));
 
   // 🔹 تهيئة الخدمات
-  app.get('/users/search', verifyJWTMiddleware, async (req : Request, res : Response) => {
+  // 🔹 Services
+    const userService = new UserServices();
+    const videoService = new VideoService();
+    const categoryService = new CategoryService();
+
+      // 🔹 تهيئة الخدمات
+    app.get('/users/search', verifyJWTMiddleware, async (req : Request, res : Response) => {
         const q = req.query.q as string;
         if (!q) return res.status(400).json({ error: 'Query missing' });
 
@@ -49,24 +55,20 @@ export const initializeApp = async () => {
         res.json(users);
     });
     // داخل initializeApp() بعد تهيئة الفيديوهات والفئات
-  app.get('/videos/search', verifyJWTMiddleware, async (req: Request, res: Response) => {
-    try {
-      const { category, subcategory } = req.query as any;
-      const query: any = {};
-      if (category) query.category = category;
-      if (subcategory) query.subcategory = subcategory;
+    app.get('/videos/search', verifyJWTMiddleware, async (req: Request, res: Response) => {
+      try {
+        const { category, subcategory } = req.query as any;
+        const query: any = {};
+        if (category) query.category = category;
+        if (subcategory) query.subcategory = subcategory;
 
-      const videos = await videoService.find({ query });
-      res.json(videos);
-    }   catch (err) {
-      res.status(500).json({ error: 'فشل البحث عن الفيديوهات' });
-    }
-  });
-  // 🔹 Services
-    const userService = new UserServices();
-    const videoService = new VideoService();
-    const categoryService = new CategoryService();
-
+        const videos = await videoService.find({ query });
+        res.json(videos);
+      }  catch (err) {
+        res.status(500).json({ error: 'فشل البحث عن الفيديوهات' });
+      }
+    });
+    
     app.use('/users', userService);
     app.use('/videos', videoService);
     app.use("/categories", categoryService);

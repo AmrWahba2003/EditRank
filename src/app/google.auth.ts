@@ -3,7 +3,6 @@ import { UserModel } from '../services/users/user.model'; // استيراد نم
 import passport from 'passport';
 import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
-import { Application } from '@feathersjs/feathers';
 
 export const setupAuth = (app: any) => {
   

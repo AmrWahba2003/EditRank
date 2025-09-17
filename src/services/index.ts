@@ -15,7 +15,7 @@ const startServer = async () => {
 
   const server = http.createServer(app);
   server.listen(port, () => {
-    console.log(`🚀 Feathers server running on http://localhost:${port}`);
+    console.log(`🚀 Feathers server running on ${port}`);
   });
   
 };
