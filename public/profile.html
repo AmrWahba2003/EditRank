@@ -32,6 +32,10 @@
   .content h3{margin:0 0 8px;color:#2575fc;font-size:1rem}
   .content p{margin:0 0 8px;color:#555;font-size:.9rem}
   .content small{color:#777;font-size:.8rem}
+  .actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  button.btn{background:#2575fc;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;transition:all .2s}
+  button.btn:hover{background:#0053ba;transform:translateY(-1px)}
+  button.liked{background:#e53e3e}
 
   /* 📱 Responsive */
   @media(max-width:700px){
@@ -57,7 +61,7 @@
 const token = localStorage.getItem('jwt');
 if(!token){ location.href = '/'; }
 
-// 📌 الحصول على userId من الرابط
+// الحصول على userId من الرابط
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
 
@@ -65,6 +69,12 @@ if(!userId){
   document.body.innerHTML = "<p style='text-align:center;margin-top:50px'>لم يتم تحديد المستخدم.</p>";
   throw new Error("User ID missing");
 }
+
+let currentUser = {};
+try {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  currentUser = payload;
+} catch(e){ console.error('Invalid token', e); }
 
 function escapeHtml(str){ 
   return String(str||'').replace(/&/g,'&amp;')
@@ -77,6 +87,10 @@ function escapeHtml(str){
 function createVideoCard(video){
   const card=document.createElement('div');
   card.className='video-card';
+  card.id = video._id;
+  const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
+  const likesCount = video.likedBy ? video.likedBy.length : 0;
+
   card.innerHTML=`
     <div class="media-wrap">
       <video src="${escapeHtml(video.url||'')}" controls></video>
@@ -85,10 +99,16 @@ function createVideoCard(video){
       <h3>${escapeHtml(video.title||'')}</h3>
       <p>${escapeHtml(video.description||'')}</p>
       <small>التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
+      <div class="actions">
+        <button class="btn like-btn${likedByMe?' liked':''}" style="background:${likedByMe?'#e53e3e':'#2575fc'}">
+          ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
+        </button>
+      </div>
     </div>`;
   return card;
 }
 
+// تحميل البروفايل والفيديوهات
 async function loadProfile(){
   try{
     const res = await fetch(`/users/${userId}`, { headers:{ Authorization:'Bearer '+token } });
@@ -116,10 +136,50 @@ async function loadProfile(){
     }
     user.videos.forEach(v=>grid.appendChild(createVideoCard(v)));
 
+    attachLikeButtons();
+
   }catch(err){
     console.error(err);
     document.body.innerHTML="<p style='text-align:center;margin-top:50px'>حدث خطأ أثناء تحميل البروفايل.</p>";
   }
+}
+
+// ==== Like / Unlike ====
+async function toggleLike(videoId, btn){
+  const liked = btn.classList.contains('liked');
+  btn.classList.toggle('liked', !liked);
+  btn.style.background = !liked ? '#e53e3e' : '#2575fc';
+  btn.textContent = !liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
+
+  try{
+    const res = await fetch(`/videos/${videoId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'فشل العملية');
+
+    const likesCount = data.likedBy ? data.likedBy.length : 0;
+    btn.textContent = !liked ? `إلغاء الإعجاب 💔 ${likesCount}` : `إعجاب ❤️ ${likesCount}`;
+  } catch(err){
+    console.error(err);
+    alert('حدث خطأ أثناء العملية');
+    btn.classList.toggle('liked', liked);
+    btn.style.background = liked ? '#e53e3e' : '#2575fc';
+    btn.textContent = liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
+  }
+}
+
+function attachLikeButtons(){
+  document.querySelectorAll('.video-card').forEach(card=>{
+    const btn = card.querySelector('.like-btn');
+    if(!btn) return;
+    btn.addEventListener('click', ()=> toggleLike(card.id, btn));
+  });
 }
 
 loadProfile();
