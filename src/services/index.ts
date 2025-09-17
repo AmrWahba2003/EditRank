@@ -17,6 +17,7 @@ const startServer = async () => {
   server.listen(port, () => {
     console.log(`🚀 Feathers server running on http://localhost:${port}`);
   });
+  
 };
 
 startServer();
