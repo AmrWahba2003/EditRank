@@ -125,7 +125,8 @@ function createVideoCard(video){
   card.id = video._id;
   card.dataset.likedBy = JSON.stringify(video.likedBy || []);
   const safeUrl = escapeHtml(video.url||'');
-  const deleteButtonHtml = (String(video.uploader._id)===String(currentUser.id)) ? `<button class="btn danger delete-btn">حذف الفيديو</button>` : '';
+  const uploaderId = video.uploader?._id || video.uploader;
+  const deleteButtonHtml = (String(uploaderId) === String(currentUser.id)) ? `<button class="btn danger delete-btn">حذف الفيديو</button>` : '';
   const likesCount = video.likedBy ? video.likedBy.length : 0;
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likeBtnHtml = `<button class="btn like-btn${likedByMe ? ' liked' : ''}" style="background:${likedByMe ? '#e53e3e' : '#2575fc'}">
