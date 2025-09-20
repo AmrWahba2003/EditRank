@@ -107,7 +107,7 @@ export const setupAuth = (app: any) => {
         process.env.JWT_SECRET!,
         { expiresIn: '3h' }
       );
-
+      console.log('Generated JWT:', token);
       // إعادة توجيه المستخدم للفرونت وحفظ التوكن في localStorage
       res.send(`
         <html>
