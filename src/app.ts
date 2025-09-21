@@ -1,5 +1,5 @@
 // ---------------------------- Imports ----------------------------
-
+import fs from 'fs';
 // import: كلمة مفتاحية في TypeScript/JavaScript لاستيراد وحدة (module) أو مكتبة
 // feathers: اسم المكتبة المستوردة، مكتبة FeathersJS الأساسية لإنشاء تطبيقات real-time وREST
 // '@feathersjs/feathers': مسار الحزمة (package) في node_modules
@@ -225,18 +225,22 @@ export const initializeApp = async () => {
     }
   });
   // -------------------- Change Avatar --------------------
-  app.post('/users/:id/change-avatar',verifyJWTMiddleware,upload.single('avatar'), // multer middleware
-  async (req: any, res: any) => {
-    try {
-      const userService = new UserServices();
-      const updated = await userService.changeAvatar(req.params.id, req.file, { user: req.user });
-      res.json(updated);
-    } catch (err: any) {
-      console.error(err);
-      res.status(400).json({ error: err.message });
-    }
+  app.post('/users/change-avatar', verifyJWTMiddleware, upload.single('avatar'), async (req: Request, res: Response) => {
+  try {
+    const file = req.file;
+    const userId = (req as any).user.id;
+
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // استدعاء خدمة تغيير avatar
+    const updatedUser = await userService.changeAvatar(userId, file.path);
+
+    res.json(updatedUser);
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
-  );
+  });
 
   // -------------------- الصفحة الرئيسية --------------------
   app.get('/', (_req: Request, res: Response) => {

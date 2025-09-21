@@ -1,6 +1,6 @@
 // ---------------------------- Imports ----------------------------
 import fs from 'fs';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 // استيراد أنواع Feathers الأساسية
 // Params: يمثل بيانات الاستعلام أو الـ params المرسلة للخدمة
 // Id: نوع يمثل الـ id لأي كائن (string | number)
@@ -76,33 +76,29 @@ export class UserServices {
             return updatedUser.toObject();
     }
 
-    async changeAvatar(id: Id, file: Express.Multer.File, params?: Params) {
+    async changeAvatar(userId: string, filePath: string) {
+    if (!userId) throw new Error('Unauthorized');
 
-        if (!params?.user) throw new Error('Unauthorized');
-        if (params.user.id !== id.toString()) throw new Error('You can only update your own avatar');
-        if (!file) throw new Error('No file uploaded');
+    const user = await UserModel.findById(userId);
+    if (!user) throw new Error('User not found');
 
-        // Example: store locally in "public/avatars"
-        const avatarsDir = path.join(__dirname, '../../public/avatars');
-        if (!fs.existsSync(avatarsDir)) fs.mkdirSync(avatarsDir, { recursive: true });
+    if (!filePath) throw new Error('No file provided');
 
-        const ext = path.extname(file.originalname);
-        const filename = `avatar_${id}${ext}`;
-        const destPath = path.join(avatarsDir, filename);
+    // رفع الصورة إلى Cloudinary
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: 'avatars',
+      public_id: `avatar_${userId}`,
+      overwrite: true
+    });
 
-        // Move file from temp (uploads/) to public/avatars
-        fs.renameSync(file.path, destPath);
+    // حذف الملف المحلي بعد الرفع
+    fs.unlinkSync(filePath);
 
-        // Update user
-        const updatedUser = await UserModel.findByIdAndUpdate(
-        id,
-        { $set: { avatar: `/avatars/${filename}` } },
-        { new: true }
-        );
+        // تحديث المستخدم في DB
+        user.avatar = result.secure_url;
+        await user.save();
 
-        if (!updatedUser) throw new Error('User not found');
-
-        return { avatar: updatedUser.avatar };
+        return user.toObject(); // إرجاع البيانات بصيغة JSON
     }
 
     async remove(id: Id, params?: Params) {
