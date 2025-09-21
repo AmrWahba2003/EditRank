@@ -281,18 +281,20 @@ searchInput.addEventListener('input', (e) => {
       <strong>${escapeHtml(u.name||'')}</strong>
       <div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div>
     </div>
-    <button style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">
+    <button class="profile-btn" style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">
       👤 بروفايل
     </button>
   `;
 
-  // 🚨 فقط زر البروفايل يعمل
-  li.querySelector('button').addEventListener('click', ()=>{ 
+  // فقط زر البروفايل يعمل
+  const btn = li.querySelector('.profile-btn');
+  btn.addEventListener('click', ()=>{ 
     window.location.href = `profile.html?userId=${u._id}`; 
   });
 
   ul.appendChild(li);
 });
+
 
       container.appendChild(list);
     } catch(err){ console.error(err); container.innerHTML='<div class="search-results"><div class="no-results">حدث خطأ أثناء البحث.</div></div>'; }
