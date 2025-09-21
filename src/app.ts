@@ -160,27 +160,22 @@ export const initializeApp = async () => {
   });
 
   // -------------------- Change Avatar --------------------
-app.post('/users/:id/change-avatar',verifyJWTMiddleware,upload.single('avatar'), // expecting "avatar" field in form-data
-    async (req: Request, res: Response) => {
-      try {
-        const { id } = req.params;
-        const file = req.file;
-        const userId = (req as any).user.id; // JWT user id
-
-        if (!file) return res.status(400).json({ error: 'No file uploaded' });
-
-        const updatedUser = await userService.changeAvatar(
-          id,
-          file.path, // Save local path for now
-          { user: { id: userId } }
-        );
-
-        res.json(updatedUser);
-        } catch (err: any) {
-        res.status(400).json({ error: err.message });
-      }
+app.post(
+  '/users/:id/change-avatar',
+  verifyJWTMiddleware,
+  upload.single('avatar'), // multer middleware
+  async (req: any, res: any) => {
+    try {
+      const userService = new UserServices();
+      const updated = await userService.changeAvatar(req.params.id, req.file, { user: req.user });
+      res.json(updated);
+    } catch (err: any) {
+      console.error(err);
+      res.status(400).json({ error: err.message });
     }
-  );
+  }
+);
+
 
 
   

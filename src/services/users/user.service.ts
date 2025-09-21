@@ -1,9 +1,10 @@
 // ---------------------------- Imports ----------------------------
-
+import fs from 'fs';
+import path from 'path';
 // استيراد أنواع Feathers الأساسية
 // Params: يمثل بيانات الاستعلام أو الـ params المرسلة للخدمة
 // Id: نوع يمثل الـ id لأي كائن (string | number)
-// ServiceMethods: واجهة لتعريف الخدمات CRUD
+// ServiceMethods: واجهة لتعريف الخدمات CRUD    
 import { Params, Id, ServiceMethods } from '@feathersjs/feathers';
 
 // استيراد UserModel وواجهة IUser
@@ -75,28 +76,33 @@ export class UserServices {
             return updatedUser.toObject();
     }
 
-    async changeAvatar(id: Id, filePath: string, params?: Params) {
-        // ✅ Validate ID
-        if (!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
+    async changeAvatar(id: Id, file: Express.Multer.File, params?: Params) {
 
-        // ✅ Ensure user is authenticated
         if (!params?.user) throw new Error('Unauthorized');
+        if (params.user.id !== id.toString()) throw new Error('You can only update your own avatar');
+        if (!file) throw new Error('No file uploaded');
 
-        // ✅ User can only update their own avatar
-        if (params.user.id !== id.toString()) {
-            throw new Error('You can only update your own avatar');
-        }
+        // Example: store locally in "public/avatars"
+        const avatarsDir = path.join(__dirname, '../../public/avatars');
+        if (!fs.existsSync(avatarsDir)) fs.mkdirSync(avatarsDir, { recursive: true });
 
-         // ✅ Update avatar field in DB
+        const ext = path.extname(file.originalname);
+        const filename = `avatar_${id}${ext}`;
+        const destPath = path.join(avatarsDir, filename);
+
+        // Move file from temp (uploads/) to public/avatars
+        fs.renameSync(file.path, destPath);
+
+        // Update user
         const updatedUser = await UserModel.findByIdAndUpdate(
-            id,
-            { $set: { avatar: filePath } },
-            { new: true }
+        id,
+        { $set: { avatar: `/avatars/${filename}` } },
+        { new: true }
         );
 
         if (!updatedUser) throw new Error('User not found');
 
-        return updatedUser.toObject();
+        return { avatar: updatedUser.avatar };
     }
 
 
