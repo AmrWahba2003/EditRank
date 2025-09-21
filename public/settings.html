@@ -1,5 +1,20 @@
 <div class="settings-container">
 
+  <!-- Change Username -->
+  <div class="setting-card">
+    <h2>تغيير اسم المستخدم</h2>
+    <input type="text" id="usernameInput" placeholder="اكتب اسم المستخدم الجديد">
+    <button class="feature-btn" id="changeUsernameBtn">تحديث الاسم</button>
+  </div>
+
+  <!-- Change Avatar -->
+  <div class="setting-card">
+    <h2>تغيير الصورة الشخصية</h2>
+    <input type="file" id="avatarInput" accept="image/*">
+    <button class="feature-btn" id="changeAvatarBtn">تحديث الصورة</button>
+  </div>
+
+  <!-- Delete Account -->
   <div class="setting-card">
     <h2>حذف الحساب</h2>
     <p class="warning">⚠️ حذف الحساب سيؤدي إلى حذف جميع الفيديوهات والرسائل بشكل نهائي!</p>
@@ -12,12 +27,6 @@
     </div>
   </div>
 
-  <div class="setting-card">
-    <h2>ميزة أخرى</h2>
-    <p>يمكنك إضافة ميزات إضافية هنا لاحقاً.</p>
-    <button class="feature-btn">إعداد جديد</button>
-  </div>
-
 </div>
 
 <style>
@@ -25,24 +34,24 @@
 .setting-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);}
 .setting-card h2{margin-bottom:10px;color:#2575fc;}
 .warning{color:#e53e3e;font-weight:700;}
-.feature-btn{width:100%;padding:12px;background:#e53e3e;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s;}
-.feature-btn:hover{background:#c53030;transform:translateY(-1px);}
+.feature-btn{width:100%;padding:12px;background:#2575fc;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:5px;}
+.feature-btn:hover{background:#1a5ddb;transform:translateY(-1px);}
 #deleteBtn{background:#e53e3e;margin-top:10px;}
 #deleteBtn:disabled{background:#999;cursor:not-allowed;}
 </style>
 
 <script>
-// toggle delete form
+// get JWT and current user
+const token = localStorage.getItem('jwt');
+let currentUser = {};
+try { currentUser = JSON.parse(atob(token.split('.')[1])); } catch(e){ console.error(e); }
+
+// -------------------- Delete Account --------------------
 const deleteToggleBtn = document.getElementById('deleteToggleBtn');
 const deleteForm = document.getElementById('deleteForm');
 deleteToggleBtn.addEventListener('click', () => {
   deleteForm.style.display = deleteForm.style.display === 'none' ? 'block' : 'none';
 });
-
-// same delete logic as before
-const token = localStorage.getItem('jwt');
-let currentUser = {};
-try { currentUser = JSON.parse(atob(token.split('.')[1])); } catch(e){ console.error(e); }
 
 const input = document.getElementById('confirmInput');
 const deleteBtn = document.getElementById('deleteBtn');
@@ -52,7 +61,6 @@ deleteBtn.addEventListener('click', async () => {
   if(!confirm('هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
   deleteBtn.disabled = true;
   deleteBtn.textContent = 'جارٍ الحذف...';
-
   try {
     const res = await fetch(`/users/${currentUser.id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
@@ -65,6 +73,67 @@ deleteBtn.addEventListener('click', async () => {
     alert(err.message);
     deleteBtn.disabled = false;
     deleteBtn.textContent = 'حذف الحساب نهائياً';
+  }
+});
+
+// -------------------- Change Username --------------------
+const usernameInput = document.getElementById('usernameInput');
+const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+changeUsernameBtn.addEventListener('click', async () => {
+  const newUsername = usernameInput.value.trim();
+  if(!newUsername) return alert('اكتب اسم المستخدم الجديد');
+  changeUsernameBtn.disabled = true;
+  changeUsernameBtn.textContent = 'جارٍ التحديث...';
+  try {
+    const res = await fetch(`/users/${currentUser.id}/change-username`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ newUsername })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'حدث خطأ أثناء تحديث الاسم');
+    alert('تم تحديث اسم المستخدم بنجاح!');
+    currentUser.username = newUsername;
+  } catch(err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    changeUsernameBtn.disabled = false;
+    changeUsernameBtn.textContent = 'تحديث الاسم';
+  }
+});
+
+// -------------------- Change Avatar --------------------
+const avatarInput = document.getElementById('avatarInput');
+const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+changeAvatarBtn.addEventListener('click', async () => {
+  const file = avatarInput.files[0];
+  if(!file) return alert('اختر صورة لتحديثها');
+  changeAvatarBtn.disabled = true;
+  changeAvatarBtn.textContent = 'جارٍ التحديث...';
+
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  try {
+    const res = await fetch(`/users/${currentUser.id}/change-avatar`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'حدث خطأ أثناء تحديث الصورة');
+    alert('تم تحديث الصورة الشخصية بنجاح!');
+    currentUser.avatar = data.avatar;
+  } catch(err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    changeAvatarBtn.disabled = false;
+    changeAvatarBtn.textContent = 'تحديث الصورة';
   }
 });
 </script>
