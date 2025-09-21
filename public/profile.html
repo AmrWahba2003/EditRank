@@ -119,6 +119,9 @@
 const token = localStorage.getItem('jwt');
 if(!token){ location.href = '/'; }
 
+// Initialize socket once
+const socket = io({ auth: { token } });
+
 // Get userId from URL
 const urlParams = new URLSearchParams(window.location.search);
 const profileUserId = urlParams.get('userId');
@@ -225,7 +228,6 @@ function attachLikeButtons(){
 }
 
 // -------------------- Chat Functions --------------------
-const socket = io({ auth:{ token } });
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -253,25 +255,27 @@ async function loadChatHistory(){
 }
 
 // Send message
-sendBtn.addEventListener('click', async ()=>{
+sendBtn.addEventListener('click', async () => {
   const content = chatInput.value.trim();
-  if(!content) return;
+  if (!content) return;
+
   const msg = { to: profileUserId, content };
-  chatInput.value='';
-  addMessage({ from:{ _id: currentUser.id }, content });
+  chatInput.value = '';
+
+  addMessage({ from: { _id: currentUser.id }, content });
 
   socket.emit('private_message', msg);
 
   await fetch('/messages', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token },
     body: JSON.stringify(msg)
   });
 });
 
 // Receive messages
-socket.on('message', (msg)=>{
-  if(msg.from._id === profileUserId || msg.to === profileUserId) addMessage(msg);
+socket.on('message', (msg) => {
+  if (msg.from._id === profileUserId || msg.to === profileUserId) addMessage(msg);
 });
 
 // -------------------- Draggable Chat --------------------

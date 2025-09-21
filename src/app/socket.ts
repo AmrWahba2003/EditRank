@@ -46,43 +46,40 @@ export const setupSocket = (server: any, app: Application) => {
 
     // -------------------- Connection Event --------------------
     io.on('connection', (socket: Socket) => {
-        // جلب بيانات المستخدم بعد التحقق من JWT
-        const user = socket.data.user as { id: string; email: string };
+  // Extract user info from JWT
+  const user = socket.data.user as { id: string; email: string };
 
-        // انضمام المستخدم لغرفة خاصة به لتلقي الرسائل الخاصة
-        socket.join(`user_${user.id}`);
-        console.log('✅ Socket connected:', user.id);
+  // Join a room specifically for this user
+  socket.join(`user_${user.id}`);
+  console.log(`✅ Socket connected: ${user.id}`);
 
-        // الحصول على خدمة الرسائل من Feathers
-        const messageSvc: any = app.service('messages');
+  // Access your messages service
+  const messageSvc: any = app.service('messages');
 
-        // -------------------- إرسال رسالة خاصة --------------------
-        socket.on('private_message', async (payload: { to: string; content: string }, ack?: (res: any) => void) => {
-            try {
-                // إنشاء الرسالة في DB باستخدام خدمة Feathers
-                const saved = await messageSvc.create(
-                    { to: payload.to, content: payload.content },
-                    { user: { id: user.id } } // تمرير المستخدم الحالي
-                );
+  // Listen for private messages
+  socket.on('private_message', async (payload) => {
+    try {
+      // Save message to DB
+      const saved = await messageSvc.create(
+        { to: payload.to, content: payload.content },
+        { user: { id: user.id } }
+      );
 
-                // إرسال الرسالة للمستلم
-                io.to(`user_${payload.to}`).emit('message', saved);
+      // Send message to recipient
+      io.to(`user_${payload.to}`).emit('message', saved);
 
-                // إرسال تأكيد للمُرسل
-                socket.emit('message_sent', saved);
+      // Confirmation to sender
+      socket.emit('message_sent', saved);
+    } catch (err: any) {
+      socket.emit('error', err.message);
+    }
+  });
 
-                // إذا كانت دالة ack موجودة، إرسال نتيجة العملية
-                if (ack) ack({ success: true, message: saved });
-            } catch (err: any) {
-                if (ack) ack({ success: false, error: err.message });
-            }
-        });
-
-        // -------------------- Disconnect Event --------------------
-        socket.on('disconnect', (reason: string) => {
-            console.log('❌ Socket disconnected:', user.id, reason);
-        });
-    });
+  // Optional: disconnect
+  socket.on('disconnect', (reason) => {
+    console.log(`❌ Socket disconnected: ${user.id} | Reason: ${reason}`);
+  });
+});
 
     return io;
 };
