@@ -147,7 +147,43 @@ export const initializeApp = async () => {
       res.status(500).json({ error: 'فشل البحث عن الفيديوهات' });
     }
   });
+  // تغيير اسم المستخدم
+  app.patch('/users/:id/change-username', verifyJWTMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { newUsername } = req.body;
+      const result = await userService.changeUsername(id, newUsername, { user: (req as any).user });
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
 
+  // -------------------- Change Avatar --------------------
+app.post('/users/:id/change-avatar',verifyJWTMiddleware,upload.single('avatar'), // expecting "avatar" field in form-data
+    async (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const file = req.file;
+        const userId = (req as any).user.id; // JWT user id
+
+        if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+        const updatedUser = await userService.changeAvatar(
+          id,
+          file.path, // Save local path for now
+          { user: { id: userId } }
+        );
+
+        res.json(updatedUser);
+        } catch (err: any) {
+        res.status(400).json({ error: err.message });
+      }
+    }
+  );
+
+
+  
   // -------------------- تسجيل الخدمات في التطبيق --------------------
   // app.use: تسجيل service على مسار معين
   // الفرق مع Express: هنا نستخدم Feathers Service وليس Route عادي

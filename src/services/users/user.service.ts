@@ -51,22 +51,54 @@ export class UserServices {
         // user.toObject(): تحويل مستند Mongoose إلى JSON عادي
         return { ...user.toObject(), videos };
     }
-    async patch(username: Id, params?: Params) {
-        console.log("username = " + username);
-        if(!username || typeof username !== 'string') throw new Error('Invalid username');
-        console.log("params = " + params);
-        if(!params?.user) throw new Error('Unauthorized');
-        console.log("params.user = " + params.user);
-        if(params.user.username !== username) throw new Error('You can only update your own profile');
-        console.log("params.user.username = " + params.user.username);
-        const updatedUser = await UserModel.findOneAndUpdate(
-            { username },
-            { $set: params?.data },
+    
+    async changeUsername(id: Id, newUsername: string, params?: Params) {
+        if (!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
+        if (!params?.user) throw new Error('Unauthorized');
+        if (params.user.id !== id.toString()) throw new Error('You can only update your own username');
+
+        if (!newUsername || typeof newUsername !== 'string') {
+            throw new Error('Invalid username');
+        }
+
+        // check if taken
+        const existing = await UserModel.findOne({ username: newUsername });
+        if (existing) throw new Error('Username already taken');
+
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            id,
+            { $set: { username: newUsername } },
             { new: true }
         );
-        if(!updatedUser) throw new Error('User not found');
-        return updatedUser;
+
+            if (!updatedUser) throw new Error('User not found');
+            return updatedUser.toObject();
     }
+
+    async changeAvatar(id: Id, filePath: string, params?: Params) {
+        // ✅ Validate ID
+        if (!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
+
+        // ✅ Ensure user is authenticated
+        if (!params?.user) throw new Error('Unauthorized');
+
+        // ✅ User can only update their own avatar
+        if (params.user.id !== id.toString()) {
+            throw new Error('You can only update your own avatar');
+        }
+
+         // ✅ Update avatar field in DB
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            id,
+            { $set: { avatar: filePath } },
+            { new: true }
+        );
+
+        if (!updatedUser) throw new Error('User not found');
+
+        return updatedUser.toObject();
+    }
+
 
     async remove(id: Id, params?: Params) {
         if(!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
