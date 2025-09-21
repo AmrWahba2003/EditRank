@@ -51,6 +51,22 @@ export class UserServices {
         // user.toObject(): تحويل مستند Mongoose إلى JSON عادي
         return { ...user.toObject(), videos };
     }
+    async patch(username: Id, params?: Params) {
+        console.log("username = " + username);
+        if(!username || typeof username !== 'string') throw new Error('Invalid username');
+        console.log("params = " + params);
+        if(!params?.user) throw new Error('Unauthorized');
+        console.log("params.user = " + params.user);
+        if(params.user.username !== username) throw new Error('You can only update your own profile');
+        console.log("params.user.username = " + params.user.username);
+        const updatedUser = await UserModel.findOneAndUpdate(
+            { username },
+            { $set: params?.data },
+            { new: true }
+        );
+        if(!updatedUser) throw new Error('User not found');
+        return updatedUser;
+    }
 
     async remove(id: Id, params?: Params) {
         if(!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
