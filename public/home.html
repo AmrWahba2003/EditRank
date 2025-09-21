@@ -200,8 +200,7 @@ async function loadVideos(filter = {}) {
       }
     });
 
-    attachLikeButtons(); // إضافة وظيفة Like/Unlike بعد إنشاء البطاقات
-
+    attachLikeButtons(); 
   } catch (err) {
     console.error(err);
     document.getElementById('videoGrid').innerHTML = '<p>حدث خطأ أثناء تحميل الفيديوهات.</p>';
@@ -245,6 +244,7 @@ document.getElementById('filterBtn').addEventListener('click', () => {
   loadVideos({ category, subcategory });
 });
 
+// =================== SEARCH FUNCTION ONLY PROFILE BUTTON ===================
 let searchTimeout;
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', (e) => {
@@ -282,65 +282,52 @@ searchInput.addEventListener('input', (e) => {
             👤 بروفايل
           </button>
         `;
-        li.addEventListener('click', (e)=>{
-          if(e.target.tagName.toLowerCase()==='button') return; 
-          loadVideos({ uploader: u._id });
-          container.innerHTML='';
-          searchInput.value='';
+        // Only profile button triggers action
+        li.querySelector('button').addEventListener('click', ()=>{
+          window.location.href = `profile.html?userId=${u._id}`;
+          container.innerHTML = '';
+          searchInput.value = '';
         });
-        li.querySelector('button').addEventListener('click', ()=>{ window.location.href = `profile.html?userId=${u._id}`; });
         ul.appendChild(li);
       });
+
       list.appendChild(ul);
       container.appendChild(list);
     } catch(err){ console.error(err); container.innerHTML='<div class="search-results"><div class="no-results">حدث خطأ أثناء البحث.</div></div>'; }
   }, 300);
 });
 
-// Like / Unlike functionality
+// Like / Unlike
 async function toggleLike(videoId, btn) {
-  // تحديث واجهة المستخدم فورًا
   const liked = btn.classList.contains('liked');
   btn.classList.toggle('liked', !liked);
   btn.style.background = !liked ? '#e53e3e' : '#2575fc';
   btn.textContent = !liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
 
   try {
-    // إرسال الطلب للسيرفر بعد تحديث الواجهة
     const res = await fetch(`/videos/${videoId}`, {
       method: 'PATCH',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': 'Bearer ' + token,'Content-Type': 'application/json' },
       body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'فشل العملية');
-
-    // تحديث عدد الإعجابات بناءً على استجابة السيرفر
+    if(!res.ok) throw new Error(data.error || 'فشل العملية');
     const likesCount = data.likedBy ? data.likedBy.length : 0;
     btn.textContent = !liked ? `إلغاء الإعجاب 💔 ${likesCount}` : `إعجاب ❤️ ${likesCount}`;
-
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     alert('حدث خطأ أثناء العملية');
-
-    // في حالة الخطأ، إعادة الزر إلى الحالة الأصلية
     btn.classList.toggle('liked', liked);
     btn.style.background = liked ? '#e53e3e' : '#2575fc';
     btn.textContent = liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
   }
 }
 
-
-
 function attachLikeButtons() {
   document.querySelectorAll('.video-card').forEach(card => {
     const btn = card.querySelector('.like-btn');
     if(!btn) return;
-
     btn.addEventListener('click', () => toggleLike(card.id, btn));
   });
 }
