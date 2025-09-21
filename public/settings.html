@@ -2,10 +2,73 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الإعدادات | EditRank</title>
+<style>
+  body{font-family:'Segoe UI',sans-serif;padding:20px;background:#f0f2f5;color:#333;}
+  h1{color:#2575fc;margin-bottom:20px;}
+  .delete-section{background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);}
+  input, button{padding:10px;margin-top:10px;border-radius:6px;border:1px solid #ccc;width:100%;font-size:1rem;}
+  button{background:#e53e3e;color:#fff;border:none;font-weight:700;cursor:pointer;}
+  button:disabled{background:#999;cursor:not-allowed;}
+  .warning{color:#e53e3e;font-weight:700;margin-bottom:10px;}
+</style>
 </head>
 <body>
-<h1>صفحة الإعدادات - قيد التطوير</h1>
-<a href="index.html">عودة للرئيسية</a>
+
+<h1>الإعدادات</h1>
+
+<div class="delete-section">
+  <div class="warning">
+    ⚠️ حذف الحساب سيؤدي إلى حذف جميع الفيديوهات والرسائل بشكل نهائي!
+  </div>
+  <p>اكتب كلمة <strong>delete</strong> لتأكيد حذف الحساب:</p>
+  <input type="text" id="confirmInput" placeholder="اكتب delete هنا">
+  <button id="deleteBtn" disabled>حذف الحساب</button>
+</div>
+
+<script>
+const token = localStorage.getItem('jwt');
+if(!token) location.href = '/';
+
+let currentUser = {};
+try { 
+  currentUser = JSON.parse(atob(token.split('.')[1])); 
+} catch(e){ console.error('Invalid token', e); }
+
+const input = document.getElementById('confirmInput');
+const deleteBtn = document.getElementById('deleteBtn');
+
+input.addEventListener('input', () => {
+  deleteBtn.disabled = input.value.trim().toLowerCase() !== 'delete';
+});
+
+deleteBtn.addEventListener('click', async () => {
+  if(!confirm('هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
+
+  deleteBtn.disabled = true;
+  deleteBtn.textContent = 'جارٍ الحذف...';
+
+  try {
+    const res = await fetch(`/users/${currentUser.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'حدث خطأ أثناء الحذف');
+
+    alert('تم حذف الحساب بنجاح!');
+    localStorage.removeItem('jwt');
+    window.location.href = '/';
+  } catch(err) {
+    console.error(err);
+    alert(err.message);
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = 'حذف الحساب';
+  }
+});
+</script>
+
 </body>
 </html>

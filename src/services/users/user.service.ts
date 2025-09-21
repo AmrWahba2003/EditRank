@@ -23,6 +23,8 @@ import { verifyJWT } from '../../app/jwt.middleware';
 // استيراد مكتبة jsonwebtoken لإنشاء JWT أو التحقق منه
 import jwt from 'jsonwebtoken';
 
+import { MessageModel } from '../messages/message.model';
+
 // ---------------------------- تعريف الخدمة ----------------------------
 export class UserServices {
     
@@ -37,23 +39,31 @@ export class UserServices {
     async get(id: Id, params?: Params) {
         // التحقق من صحة الـ ObjectId
         if (!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
-
         // البحث عن المستخدم حسب id
         const user = await UserModel.findById(id);
-
         // إذا لم يوجد المستخدم
         if (!user) throw new Error('User not found');
-
         // البحث عن الفيديوهات التي رفعها المستخدم
         // uploader: id المستخدم
         // بدون populate، أي يرجع فقط الـ ObjectId للفيديوهات
         const videos = await VideoModel.find({ uploader: id });
-
         // دمج بيانات المستخدم مع الفيديوهات وإرجاعها
         // user.toObject(): تحويل مستند Mongoose إلى JSON عادي
         return { ...user.toObject(), videos };
     }
 
+    async remove(id: Id, params?: Params) {
+        if(!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
+
+        const videos = await VideoModel.deleteMany({ uploader: id });
+
+        const masseges = await MessageModel.deleteMany({ $or: [ { from: id }, { to: id } ] });
+
+        const user = await UserModel.findByIdAndDelete(id);
+        if(!user) throw new Error('User not found');
+
+        return user;
+    }
     // search: دالة للبحث عن المستخدمين باسم أو username
     async search(query: string) {
         return await UserModel.find({
