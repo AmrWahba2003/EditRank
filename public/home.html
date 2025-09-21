@@ -275,44 +275,39 @@ searchInput.addEventListener('input', (e) => {
       const ul = document.createElement('ul');
 
       results.forEach(u => {
-        const li = document.createElement('li');
-        const avatarHtml = u.avatar 
-          ? `<img class="user-avatar" src="${escapeHtml(u.avatar)}" alt="avatar">` 
-          : `<div class="user-avatar" style="width:32px;height:32px;border-radius:50%;background:#eee"></div>`;
+  const li = document.createElement('li');
+  const avatar = u.avatar
+    ? `<img src="${escapeHtml(u.avatar)}" alt="avatar" class="profile-img">`
+    : `<div style="width:32px;height:32px;border-radius:50%;background:#eee" class="profile-img"></div>`;
 
-        li.innerHTML = `
-          ${avatarHtml}
-          <div>
-            <strong>${escapeHtml(u.name||'')}</strong>
-            <div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div>
-          </div>
-          <button style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">
-            👤 بروفايل
-          </button>
-        `;
+  li.innerHTML = `
+    ${avatar}
+    <div>
+      <strong>${escapeHtml(u.name||'')}</strong>
+      <div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div>
+    </div>
+    <button class="profile-btn" style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">
+      👤 بروفايل
+    </button>
+  `;
 
-        // الضغط على الـ li (الاسم أو الفراغ) → جلب الفيديوهات
-        li.addEventListener('click', ()=> {
-          loadVideos({ uploader: u._id });
-          container.innerHTML='';
-          searchInput.value='';
-        });
+  // الضغط على الصورة → تحميل فيديوهات المستخدم
+  const img = li.querySelector('.profile-img');
+  img.addEventListener('click', () => {
+    loadVideos({ uploader: u._id });
+    container.innerHTML = '';
+    searchInput.value = '';
+  });
 
-        // الضغط على الصورة → فتح صفحة البروفايل
-        const avatarEl = li.querySelector('.user-avatar');
-        avatarEl.addEventListener('click', (e)=> {
-          e.stopPropagation(); 
-          window.location.href = `profile.html?userId=${u._id}`;
-        });
+  // الضغط على زر البروفايل → فتح صفحة البروفايل
+  const btn = li.querySelector('.profile-btn');
+  btn.addEventListener('click', () => {
+    window.location.href = `profile.html?userId=${u._id}`;
+  });
 
-        // الضغط على الزر → فتح صفحة البروفايل
-        li.querySelector('button').addEventListener('click', (e)=> {
-          e.stopPropagation();
-          window.location.href = `profile.html?userId=${u._id}`;
-        });
+  ul.appendChild(li);
+});
 
-        ul.appendChild(li);
-      });
 
       list.appendChild(ul);
       container.appendChild(list);
