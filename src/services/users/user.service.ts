@@ -105,7 +105,6 @@ export class UserServices {
         return { avatar: updatedUser.avatar };
     }
 
-
     async remove(id: Id, params?: Params) {
         if(!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
 

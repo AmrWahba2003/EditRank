@@ -159,22 +159,7 @@ export const initializeApp = async () => {
     }
   });
 
-  // -------------------- Change Avatar --------------------
-app.post(
-  '/users/:id/change-avatar',
-  verifyJWTMiddleware,
-  upload.single('avatar'), // multer middleware
-  async (req: any, res: any) => {
-    try {
-      const userService = new UserServices();
-      const updated = await userService.changeAvatar(req.params.id, req.file, { user: req.user });
-      res.json(updated);
-    } catch (err: any) {
-      console.error(err);
-      res.status(400).json({ error: err.message });
-    }
-  }
-);
+  
 
 
 
@@ -239,6 +224,19 @@ app.post(
       res.status(400).json({ error: err.message });
     }
   });
+  // -------------------- Change Avatar --------------------
+  app.post('/users/:id/change-avatar',verifyJWTMiddleware,upload.single('avatar'), // multer middleware
+  async (req: any, res: any) => {
+    try {
+      const userService = new UserServices();
+      const updated = await userService.changeAvatar(req.params.id, req.file, { user: req.user });
+      res.json(updated);
+    } catch (err: any) {
+      console.error(err);
+      res.status(400).json({ error: err.message });
+    }
+  }
+  );
 
   // -------------------- الصفحة الرئيسية --------------------
   app.get('/', (_req: Request, res: Response) => {
