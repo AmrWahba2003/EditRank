@@ -255,13 +255,18 @@ searchInput.addEventListener('input', (e) => {
 
   searchTimeout = setTimeout(async () => {
     try {
-      const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`, { headers:{ Authorization:'Bearer '+token }});
+      const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`, { 
+        headers:{ Authorization:'Bearer '+token } 
+      });
       if(!res.ok) throw new Error('فشل البحث');
       const results = await res.json();
       container.innerHTML = '';
 
       if(!results || results.length === 0){
-        container.innerHTML = `<div class="search-results"><div class="no-results">لم يتم العثور على مستخدم.</div></div>`;
+        container.innerHTML = `
+          <div class="search-results">
+            <div class="no-results">لم يتم العثور على مستخدم.</div>
+          </div>`;
         return;
       }
 
@@ -271,9 +276,12 @@ searchInput.addEventListener('input', (e) => {
 
       results.forEach(u => {
         const li = document.createElement('li');
-        const avatar = u.avatar ? `<img src="${escapeHtml(u.avatar)}" alt="avatar">` : `<div style="width:32px;height:32px;border-radius:50%;background:#eee"></div>`;
+        const avatarHtml = u.avatar 
+          ? `<img class="user-avatar" src="${escapeHtml(u.avatar)}" alt="avatar">` 
+          : `<div class="user-avatar" style="width:32px;height:32px;border-radius:50%;background:#eee"></div>`;
+
         li.innerHTML = `
-          ${avatar}
+          ${avatarHtml}
           <div>
             <strong>${escapeHtml(u.name||'')}</strong>
             <div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div>
@@ -282,21 +290,42 @@ searchInput.addEventListener('input', (e) => {
             👤 بروفايل
           </button>
         `;
-        li.addEventListener('click', (e)=>{
-          if(e.target.tagName.toLowerCase()==='button') return; 
+
+        // الضغط على الـ li (الاسم أو الفراغ) → جلب الفيديوهات
+        li.addEventListener('click', ()=> {
           loadVideos({ uploader: u._id });
           container.innerHTML='';
           searchInput.value='';
         });
-        li.querySelector('button').addEventListener('click', ()=>{ window.location.href = `profile.html?userId=${u._id}`; });
+
+        // الضغط على الصورة → فتح صفحة البروفايل
+        const avatarEl = li.querySelector('.user-avatar');
+        avatarEl.addEventListener('click', (e)=> {
+          e.stopPropagation(); 
+          window.location.href = `profile.html?userId=${u._id}`;
+        });
+
+        // الضغط على الزر → فتح صفحة البروفايل
+        li.querySelector('button').addEventListener('click', (e)=> {
+          e.stopPropagation();
+          window.location.href = `profile.html?userId=${u._id}`;
+        });
+
         ul.appendChild(li);
       });
+
       list.appendChild(ul);
       container.appendChild(list);
-    } catch(err){ console.error(err); container.innerHTML='<div class="search-results"><div class="no-results">حدث خطأ أثناء البحث.</div></div>'; }
+
+    } catch(err){ 
+      console.error(err); 
+      container.innerHTML='<div class="search-results"><div class="no-results">حدث خطأ أثناء البحث.</div></div>'; 
+    }
   }, 300);
 });
 
+  
+  
 // Like / Unlike functionality
 async function toggleLike(videoId, btn) {
   // تحديث واجهة المستخدم فورًا
