@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بحث مستخدمين | EditRank</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body {
+  background:#f0f2f5;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  margin:0;
+  padding-top:60px;
+}
+header {
+  background:#2575fc;
+  color:#fff;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+  z-index:200;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px;
+}
+header h1 {
+  font-size:1.5rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.logo {
+  width:40px;
+  height:40px;
+  background:url('logo.png') no-repeat center/contain;
+}
+nav.flex-column {
+  background:#fff;
+  padding:10px;
+  border-right:1px solid #ddd;
+}
+nav.flex-column a {
+  display:block;
+  margin-bottom:8px;
+  text-decoration:none;
+  color:#000;
+}
+.nav-toggle {
+  display:none;
+  font-size:1.5rem;
+  cursor:pointer;
+}
+.search-results {
+  margin-top:15px;
+}
+.search-results li {
+  display:flex;
+  align-items:center;
+  padding:5px;
+  border-bottom:1px solid #eee;
+  gap:8px;
+}
+.search-results img {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  object-fit:cover;
+}
+.no-results { padding:10px; color:#666; font-size:.9rem; }
+@media(max-width:991px){
+  nav.flex-column { 
+    display:none;
+    position:fixed;
+    top:60px;
+    left:0;
+    width:200px;
+    height:100%;
+    z-index:250;
+    overflow-y:auto;
+    box-shadow:2px 0 10px rgba(0,0,0,.2);
+  }
+  nav.flex-column.active { display:block; }
+  .nav-toggle { display:block; color:#fff; }
+}
+</style>
+</head>
+<body>
+
+<header class="d-flex align-items-center justify-content-between">
+  <div class="d-flex align-items-center">
+    <span class="nav-toggle">&#9776;</span>
+    <h1 class="d-flex align-items-center"><div class="logo"></div> EditRank</h1>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <img id="profileImg" src="" alt="صورة الحساب" class="rounded-circle" width="40" height="40">
+    <span id="profileName" class="fw-bold"></span>
+  </div>
+</header>
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <nav class="flex-column" id="sidebar">
+    <a href="home.html">🏠 الرئيسية</a>
+    <a href="#" id="profileLink">👤 Profile</a>
+    <a href="settings.html">⚙️ Settings</a>
+    <a href="upload.html">⬆️ Upload</a>
+    <a href="/" class="text-danger">تسجيل الخروج</a>
+  </nav>
+
+  <!-- Content -->
+  <div class="flex-grow-1 p-3">
+    <h3 class="text-primary mb-2">ابحث عن مستخدمين</h3>
+    <input type="text" id="searchInput" class="form-control mb-2" placeholder="اكتب اسم المستخدم أو الاسم...">
+    <ul id="searchResults" class="search-results list-unstyled"></ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Sidebar toggle
+const navToggle = document.querySelector('.nav-toggle');
+const sidebar = document.getElementById('sidebar');
+navToggle.addEventListener('click', ()=>{ sidebar.classList.toggle('active'); });
+
+// Token and currentUser
+const token = localStorage.getItem('jwt');
+if(!token){ location.href = '/'; }
+
+let currentUser = {};
+try {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  currentUser = payload;
+  const savedAvatar = localStorage.getItem('currentUserAvatar');
+  if(savedAvatar) payload.avatar = savedAvatar;
+  document.getElementById('profileImg').src = payload.avatar || '';
+  document.getElementById('profileName').textContent = payload.username || 'مستخدم';
+} catch(e){ console.error('Invalid token', e); }
+
+document.getElementById('profileLink').addEventListener('click', ()=>{ window.location.href=`profile.html?userId=${currentUser.id}`; });
+
+// Escape HTML
+function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// Search users
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+const resultsList = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', e=>{
+  clearTimeout(searchTimeout);
+  const query = e.target.value.trim();
+  resultsList.innerHTML = '';
+  if(!query) return;
+
+  searchTimeout = setTimeout(async()=>{
+    try{
+      const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`, { headers:{Authorization:'Bearer '+token}});
+      if(!res.ok) throw new Error('فشل البحث');
+      const results = await res.json();
+      resultsList.innerHTML = '';
+      if(!results.length){ 
+        resultsList.innerHTML = '<li class="no-results">لم يتم العثور على مستخدم.</li>'; 
+        return;
+      }
+      results.forEach(u=>{
+        const li = document.createElement('li');
+        const avatar = u.avatar ? `<img src="${escapeHtml(u.avatar)}" alt="avatar">` : `<div style="width:40px;height:40px;border-radius:50%;background:#eee"></div>`;
+        li.innerHTML = `${avatar}<div><strong>${escapeHtml(u.name||'')}</strong><br><small>${escapeHtml(u.username||'')}</small></div>`;
+        li.style.cursor = 'pointer';
+        li.addEventListener('click', ()=>{ window.location.href=`profile.html?userId=${u._id}`; });
+        resultsList.appendChild(li);
+      });
+    } catch(err){ 
+      console.error(err); 
+      resultsList.innerHTML = '<li class="no-results">حدث خطأ أثناء البحث.</li>';
+    }
+  },300);
+});
+</script>
+
+</body>
+</html>

@@ -35,18 +35,9 @@ body {
 .video-card {
   transition:.3s;
 }
-.video-card:hover {
-  transform:translateY(-4px); 
-  box-shadow:0 10px 25px rgba(0,0,0,.2);
-}
-.video-card video {
-  width:100%;
-  height:auto;
-  border-radius:8px;
-}
-.actions button {
-  margin-top:5px;
-}
+.video-card:hover {transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,.2);}
+.video-card video {width:100%; height:auto; border-radius:8px;}
+.actions button { margin-top:5px; }
 </style>
 </head>
 <body>
@@ -62,26 +53,15 @@ if(!token){ location.href = '/'; }
 
 const urlParams = new URLSearchParams(window.location.search);
 const profileUserId = urlParams.get('userId');
-if(!profileUserId){ 
-  document.body.innerHTML="<p class='text-center mt-5'>لم يتم تحديد المستخدم.</p>"; 
-  throw new Error("User ID missing"); 
-}
+if(!profileUserId){ document.body.innerHTML="<p class='text-center mt-5'>لم يتم تحديد المستخدم.</p>"; throw new Error("User ID missing"); }
 
 let currentUser = {};
 try { currentUser = JSON.parse(atob(token.split('.')[1])); } 
 catch(e){ console.error('Invalid token', e); }
 
-// وظيفة لتفادي XSS
-function escapeHtml(str){ 
-  return String(str||'')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;'); 
-}
+function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-// ---------- إنشاء بطاقة الفيديو ----------
+// ---------- Video Cards ----------
 function createVideoCard(video){
   const col = document.createElement('div');
   col.className = 'col-sm-6 col-md-4';
@@ -89,77 +69,52 @@ function createVideoCard(video){
 
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likesCount = video.likedBy ? video.likedBy.length : 0;
-  const isOwner = video.uploader && video.uploader._id.toString() === currentUser.id.toString();
 
-  col.innerHTML = `
+  // تحقق إذا الفيديو يخص المستخدم الحالي
+  const isOwner = video.uploader === currentUser.id || video.uploader?._id === currentUser.id;
+
+  col.innerHTML=`
     <div class="card video-card h-100">
       <video src="${escapeHtml(video.url||'')}" controls class="card-img-top"></video>
       <div class="card-body d-flex flex-column">
         <h5 class="card-title text-primary">${escapeHtml(video.title||'')}</h5>
         <p class="card-text text-muted">${escapeHtml(video.description||'')}</p>
         <small class="text-secondary">التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
-        <div class="actions mt-auto d-flex flex-column gap-2">
-          <button class="btn ${likedByMe?'btn-danger':'btn-primary'} w-100 like-btn">
+        <div class="actions mt-auto d-flex gap-2">
+          <button class="btn ${likedByMe?'btn-danger':'btn-primary'} w-50 like-btn">
             ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
           </button>
-          ${isOwner ? `<button class="btn btn-outline-danger w-100 delete-btn">حذف الفيديو</button>` : ''}
+          ${isOwner ? `<button class="btn btn-outline-danger w-50 delete-btn">حذف 🗑️</button>` : ''}
         </div>
       </div>
     </div>`;
 
-  // حدث حذف الفيديو
-  const delBtn = col.querySelector('.delete-btn');
-  if(delBtn){
-    delBtn.addEventListener('click', async ()=>{
-      if(!confirm('هل تريد حذف هذا الفيديو؟')) return;
-      try{
-        const res = await fetch(`/videos/${video._id}`, {
-          method:'DELETE',
-          headers:{ Authorization:'Bearer '+token }
-        });
-        const data = await res.json();
-        if(res.ok){
-          col.remove();
-          alert('تم حذف الفيديو');
-        } else {
-          alert(data.error || 'فشل الحذف');
-        }
-      } catch(err){
-        console.error(err);
-        alert('حدث خطأ أثناء الحذف');
-      }
-    });
-  }
-
   return col;
 }
 
-// ---------- تحميل البروفايل ----------
+// ---------- Load Profile ----------
 async function loadProfile(){
   try{
     const res = await fetch(`/users/${profileUserId}`, { headers:{ Authorization:'Bearer '+token } });
     if(!res.ok) throw new Error("فشل جلب بيانات المستخدم");
     const user = await res.json();
 
-    const header = document.getElementById('profileHeader');
+    const header=document.getElementById('profileHeader');
     const savedAvatar = localStorage.getItem('currentUserAvatar');
     if(savedAvatar) user.avatar = savedAvatar;
 
-    const avatar = user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
-    header.innerHTML = `${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
+    const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
+    header.innerHTML=`${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
 
-    const grid = document.getElementById('videoGrid');
+    const grid=document.getElementById('videoGrid');
     grid.innerHTML='';
     if(!user.videos || user.videos.length===0){ 
       grid.innerHTML='<p class="text-center" style="grid-column:1/-1;">لا يوجد فيديوهات.</p>'; 
     } else { 
       user.videos.forEach(v=>grid.appendChild(createVideoCard(v)));
-      attachLikeButtons();
+      attachButtons();
     }
-  }catch(err){ 
-    console.error(err); 
-    document.body.innerHTML="<p class='text-center mt-5'>حدث خطأ أثناء تحميل البروفايل.</p>"; 
-  }
+  }catch(err){ console.error(err); document.body.innerHTML="<p class='text-center mt-5'>حدث خطأ أثناء تحميل البروفايل.</p>"; }
 }
 
 // ---------- Like / Unlike ----------
@@ -187,14 +142,42 @@ async function toggleLike(videoId, btn){
   }
 }
 
-function attachLikeButtons(){
+// ---------- Delete Video ----------
+async function deleteVideo(videoId, col){
+  if(!confirm('هل أنت متأكد من حذف هذا الفيديو؟')) return;
+
+  try{
+    const res = await fetch(`/videos/${videoId}`, {
+      method:'DELETE',
+      headers:{ 'Authorization':'Bearer '+token }
+    });
+
+    if(!res.ok){
+      const data = await res.json();
+      throw new Error(data.error || 'فشل حذف الفيديو');
+    }
+
+    // إزالة البطاقة من الـ DOM
+    col.remove();
+    alert('تم حذف الفيديو بنجاح!');
+  }catch(err){
+    console.error(err);
+    alert('حدث خطأ أثناء حذف الفيديو');
+  }
+}
+
+// ---------- Attach Buttons ----------
+function attachButtons(){
   document.querySelectorAll('.col-sm-6.col-md-4').forEach(col=>{
-    const btn = col.querySelector('.like-btn');
-    if(btn) btn.addEventListener('click', ()=> toggleLike(col.id, btn));
+    const likeBtn = col.querySelector('.like-btn');
+    if(likeBtn) likeBtn.addEventListener('click', ()=> toggleLike(col.id, likeBtn));
+
+    const deleteBtn = col.querySelector('.delete-btn');
+    if(deleteBtn) deleteBtn.addEventListener('click', ()=> deleteVideo(col.id, col));
   });
 }
 
-// ---------- تشغيل ----------
+// ---------- Initialize ----------
 loadProfile();
 </script>
 </body>
