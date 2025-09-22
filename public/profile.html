@@ -10,6 +10,7 @@ body {
   background:#f0f2f5;
   font-family:'Segoe UI',Tahoma,sans-serif;
   color:#333;
+  padding-top:20px;
 }
 .profile-header {
   background:#fff;
@@ -35,9 +36,21 @@ body {
 .video-card {
   transition:.3s;
 }
-.video-card:hover {transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,.2);}
-.video-card video {width:100%; height:auto; border-radius:8px;}
-.actions button { margin-top:5px; }
+.video-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+.video-card video {
+  width:100%;
+  height:auto;
+  border-radius:8px;
+}
+.actions button {
+  margin-top:5px;
+}
+@media(max-width:576px){
+  .profile-header { flex-direction:column; }
+}
 </style>
 </head>
 <body>
@@ -64,12 +77,12 @@ function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/
 // ---------- Video Cards ----------
 function createVideoCard(video){
   const col = document.createElement('div');
-  col.className = 'col-sm-6 col-md-4';
+  col.className = 'col-12 col-sm-6 col-md-4';
   col.id = video._id;
 
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likesCount = video.likedBy ? video.likedBy.length : 0;
-  const isOwner = video.uploader?._id === currentUser.id; // تحقق إذا صاحب الفيديو هو المستخدم الحالي
+  const isOwner = video.uploader?._id === currentUser.id;
 
   col.innerHTML=`
     <div class="card video-card h-100">
@@ -87,7 +100,7 @@ function createVideoCard(video){
       </div>
     </div>`;
 
-  // إضافة حدث حذف إذا كان الزر موجود
+  // حدث حذف الفيديو
   const delBtn = col.querySelector('.delete-btn');
   if(delBtn){
     delBtn.addEventListener('click', async ()=>{
@@ -114,7 +127,7 @@ function createVideoCard(video){
   return col;
 }
 
-
+// ---------- Load Profile ----------
 async function loadProfile(){
   try{
     const res = await fetch(`/users/${profileUserId}`, { headers:{ Authorization:'Bearer '+token } });
@@ -122,9 +135,6 @@ async function loadProfile(){
     const user = await res.json();
 
     const header=document.getElementById('profileHeader');
-    const savedAvatar = localStorage.getItem('currentUserAvatar');
-    if(savedAvatar) user.avatar = savedAvatar;
-
     const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
     header.innerHTML=`${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
 
@@ -164,8 +174,9 @@ async function toggleLike(videoId, btn){
   }
 }
 
+// ---------- Attach Like Buttons ----------
 function attachLikeButtons(){
-  document.querySelectorAll('.col-sm-6.col-md-4').forEach(col=>{
+  document.querySelectorAll('.col-12.col-sm-6.col-md-4').forEach(col=>{
     const btn = col.querySelector('.like-btn');
     if(btn) btn.addEventListener('click', ()=> toggleLike(col.id, btn));
   });
