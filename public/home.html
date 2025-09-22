@@ -4,344 +4,308 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>الرئيسية | EditRank</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif}
-  body{display:flex;min-height:100vh;background:#f0f2f5;color:#333;transition:all .3s ease}
-
-  /* Header */
-  header{position:fixed;top:0;left:0;right:0;height:60px;background:#2575fc;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 20px;z-index:100;box-shadow:0 4px 10px rgba(0,0,0,.2)}
-  .logo{width:40px;height:40px;background:url('logo.png') no-repeat center/contain;margin-right:10px}
-  header h1{font-size:1.5rem;display:flex;align-items:center;gap:8px}
-  .user-info{display:flex;align-items:center;gap:10px;position:relative}
-  #profileImg{width:40px;height:40px;border-radius:50%;object-fit:cover}
-  #profileName{font-weight:700}
-  .logout-btn,.upload-btn{background:#fff;color:#2575fc;padding:6px 12px;border-radius:6px;text-decoration:none;font-weight:700;transition:all .3s}
-  .logout-btn:hover,.upload-btn:hover{background:#f1f1f1;transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.2)}
-
-  /* Search Bar */
-  .search-bar{display:flex;align-items:center;gap:8px;position:relative}
-  .search-bar input{padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:.9rem;width:200px}
-  .search-results{position:absolute;top:40px;right:0;width:280px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:200}
-  .search-results ul{list-style:none;margin:0;padding:0}
-  .search-results li{padding:10px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f5f5f5}
-  .search-results li:hover{background:#f9f9f9}
-  .search-results img{width:32px;height:32px;border-radius:50%;object-fit:cover}
-  .no-results{padding:10px;color:#666;font-size:.9rem}
-
-  /* Sidebar */
-  .sidebar{width:220px;background:#fff;border-right:1px solid #ddd;padding-top:60px;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;transition:width .3s ease;overflow:hidden;z-index:99}
-  .sidebar.closed{width:60px}
-  .sidebar a{padding:15px 20px;text-decoration:none;color:#333;font-weight:700;border-left:4px solid transparent;display:flex;align-items:center;gap:10px;transition:all .3s;white-space:nowrap}
-  .sidebar a:hover{background:#f9f9f9;border-left:4px solid #2575fc}
-  .sidebar a span{transition:opacity .3s}
-  .sidebar.closed a span{opacity:0}
-  .toggle-btn{position:absolute;top:10px;right:-15px;background:#2575fc;color:#fff;border-radius:50%;width:30px;height:30px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:101}
-
-  /* Main */
-  main{margin-left:220px;padding:80px 30px 30px 30px;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:25px;transition:margin-left .3s}
-  .sidebar.closed ~ main{margin-left:60px}
-
-  /* Video card */
-  .video-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.1);display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s}
-  .video-card:hover{transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,.2)}
-  .media-wrap{position:relative;width:100%;padding-top:56.25%;background:#000}
-  .media-wrap video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:#000}
-  @supports (aspect-ratio: 16 / 9){.media-wrap{padding-top:0}.media-wrap video{position:static;aspect-ratio:16/9;width:100%;height:auto}}
-
-  .video-card .content{padding:15px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
-  .video-card h3{margin-bottom:8px;font-size:1.2rem;color:#2575fc}
-  .video-card p{font-size:.95rem;color:#666;margin-bottom:10px}
-  .meta{font-size:.85rem;color:#555;margin-bottom:10px}
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
-  button.btn{background:#2575fc;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;transition:all .2s}
-  button.btn:hover{background:#0053ba;transform:translateY(-2px)}
-  button.danger{background:#e53e3e}
-  button.danger:hover{background:#c53030}
-
-  /* Right Panel: Category Filter */
-  #categoryPanel{position:fixed;top:60px;right:0;width:240px;background:#fff;border-left:1px solid #ddd;padding:15px;box-shadow:-2px 0 8px rgba(0,0,0,.1);height:calc(100% - 60px);overflow-y:auto;z-index:99}
-  #categoryPanel h3{margin-bottom:10px;font-size:1.1rem;color:#2575fc}
-  #categoryPanel select{width:100%;margin-bottom:10px;padding:6px;border-radius:6px;border:1px solid #ccc}
-
-  @media(max-width:900px){main{margin-left:60px} #categoryPanel{display:none}}
+body {
+  background:#f0f2f5;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  margin:0;
+  padding-top:60px; /* ارتفاع الهيدر */
+}
+header {
+  background:#2575fc;
+  color:#fff;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+  z-index:200;
+}
+header h1 {
+  font-size:1.5rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.logo {
+  width:40px;
+  height:40px;
+  background:url('logo.png') no-repeat center/contain;
+}
+header .header-right {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  position:relative;
+}
+.video-card {
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,.1);
+  transition:transform .3s, box-shadow .3s;
+  margin-bottom:20px;
+  background:#fff;
+}
+.video-card:hover {
+  transform:translateY(-5px);
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+.media-wrap {
+  position:relative;
+  width:100%;
+  padding-top:56.25%;
+  background:#000;
+}
+.media-wrap video {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+.actions button {
+  margin-right:5px;
+  margin-top:5px;
+}
+.search-results {
+  position:absolute;
+  top:45px;
+  right:0;
+  width:280px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.15);
+  z-index:300;
+}
+.search-results li:hover { background:#f9f9f9; }
+.search-results img {
+  width:32px; height:32px; border-radius:50%; object-fit:cover;
+}
+.no-results { padding:10px; color:#666; font-size:.9rem; }
+nav.flex-column {
+  background:#fff;
+  padding:10px;
+  border-right:1px solid #ddd;
+}
+.nav-toggle {
+  display:none;
+  font-size:1.5rem;
+  cursor:pointer;
+}
+@media(max-width:991px){
+  nav.flex-column { 
+    display:none;
+    position:fixed;
+    top:60px;
+    left:0;
+    width:200px;
+    height:100%;
+    z-index:250;
+    overflow-y:auto;
+    box-shadow:2px 0 10px rgba(0,0,0,.2);
+  }
+  nav.flex-column.active { display:block; }
+  .nav-toggle { display:block; margin-right:10px; color:#fff; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1><div class="logo"></div> EditRank</h1>
-  <div class="user-info">
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="ابحث عن مستخدم...">
-    </div>
-    <img id="profileImg" src="" alt="صورة الحساب">
-    <span id="profileName"></span>
-    <a href="/" class="logout-btn" id="logoutBtn">تسجيل الخروج</a>
-    <a href="upload.html" class="upload-btn">رفع فيديو</a>
+<header class="d-flex justify-content-between align-items-center p-2">
+  <div class="d-flex align-items-center">
+    <span class="nav-toggle">&#9776;</span>
+    <h1 class="d-flex align-items-center">
+      <div class="logo"></div> EditRank
+    </h1>
   </div>
-  <div id="searchResultsContainer"></div>
+  <div class="header-right">
+    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="ابحث عن مستخدم..." style="width:180px;">
+    <img id="profileImg" src="" alt="صورة الحساب" class="rounded-circle" width="40" height="40">
+    <span id="profileName" class="fw-bold"></span>
+    <a href="/" class="btn btn-light btn-sm fw-bold">تسجيل الخروج</a>
+    <a href="upload.html" class="btn btn-light btn-sm fw-bold">رفع فيديو</a>
+    <div id="searchResultsContainer"></div>
+  </div>
 </header>
 
-<div class="sidebar" id="sidebar">
-  <div class="toggle-btn" id="toggleBtn">☰</div>
-  <a href="#" id="profileLink">👤 <span>Profile</span></a>
-  <a href="#" id="settingsLink">⚙️ <span>Settings</span></a>
-  <a href="upload.html" id="uploadLink">⬆️ <span>Upload</span></a>
+<div class="d-flex">
+  <nav class="flex-column" id="sidebar">
+    <a href="#" id="profileLink" class="d-block mb-2">👤 <span>Profile</span></a>
+    <a href="#" id="settingsLink" class="d-block mb-2">⚙️ <span>Settings</span></a>
+    <a href="upload.html" class="d-block mb-2">⬆️ <span>Upload</span></a>
+  </nav>
+
+  <div class="flex-grow-1 p-3">
+    <div id="categoryPanel" class="mb-3">
+      <h3 class="text-primary">تصفية الفيديوهات</h3>
+      <div class="mb-2">
+        <select id="categorySelect" class="form-select form-select-sm">
+          <option value="">اختر الفئة</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <select id="subcategorySelect" class="form-select form-select-sm">
+          <option value="">اختر الفئة الفرعية</option>
+        </select>
+      </div>
+      <button id="filterBtn" class="btn btn-primary btn-sm">بحث</button>
+    </div>
+    <div class="row" id="videoGrid"></div>
+  </div>
 </div>
 
-<div id="categoryPanel">
-  <h3>تصفية الفيديوهات</h3>
-  <select id="categorySelect">
-    <option value="">اختر الفئة</option>
-  </select>
-  <select id="subcategorySelect">
-    <option value="">اختر الفئة الفرعية</option>
-  </select>
-  <button id="filterBtn" class="btn">بحث</button>
-</div>
-
-<main id="videoGrid"></main>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Sidebar toggle
+const navToggle = document.querySelector('.nav-toggle');
+const sidebar = document.getElementById('sidebar');
+navToggle.addEventListener('click', ()=>{ sidebar.classList.toggle('active'); });
+
+// Token and currentUser
 const token = localStorage.getItem('jwt');
 if(!token){ location.href = '/'; }
 
 let currentUser = {};
-try { 
-  const payload = JSON.parse(atob(token.split('.')[1])); 
-  currentUser = payload; 
-  document.getElementById('profileImg').src = payload.avatar || ''; 
-  document.getElementById('profileName').textContent = payload.name || 'مستخدم'; 
+try {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  currentUser = payload;
+  const savedAvatar = localStorage.getItem('currentUserAvatar');
+  if(savedAvatar) payload.avatar = savedAvatar;
+  document.getElementById('profileImg').src = payload.avatar || '';
+  document.getElementById('profileName').textContent = payload.username || 'مستخدم';
 } catch(e){ console.error('Invalid token', e); }
 
-// new code 
-const profileLink = document.getElementById('profileLink');
-profileLink.addEventListener('click', () => {
-  window.location.href = `profile.html?userId=${currentUser.id}`;
+window.addEventListener('storage', (e) => {
+  if(e.key==='avatarUpdated'){ document.getElementById('profileImg').src=localStorage.getItem('currentUserAvatar')||''; }
+  if(e.key==='usernameUpdated'){ document.getElementById('profileName').textContent=localStorage.getItem('currentUsername')||''; }
 });
 
-const settingsLink = document.getElementById('settingsLink');
-settingsLink.addEventListener('click', () => {
-  window.location.href = 'settings.html';
-});
+document.getElementById('profileLink').addEventListener('click', ()=>{ window.location.href=`profile.html?userId=${currentUser.id}`; });
+document.getElementById('settingsLink').addEventListener('click', ()=>{ window.location.href='settings.html'; });
 
-const sidebar = document.getElementById('sidebar');
-document.getElementById('toggleBtn').addEventListener('click', ()=> sidebar.classList.toggle('closed'));
-
+// Escape HTML
 function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+// Create video card
 function createVideoCard(video){
-  const card = document.createElement('div');
-  card.className='video-card';
-  card.id = video._id;
-  card.dataset.likedBy = JSON.stringify(video.likedBy || []);
-  const safeUrl = escapeHtml(video.url||'');
-  const uploaderId = video.uploader?._id || video.uploader;
-  const deleteButtonHtml = (String(uploaderId) === String(currentUser.id)) ? `<button class="btn danger delete-btn">حذف الفيديو</button>` : '';
-  const likesCount = video.likedBy ? video.likedBy.length : 0;
+  const col = document.createElement('div');
+  col.className='col-sm-6 col-md-4';
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
-  const likeBtnHtml = `<button class="btn like-btn${likedByMe ? ' liked' : ''}" style="background:${likedByMe ? '#e53e3e' : '#2575fc'}">
-    ${likedByMe ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️'} ${likesCount}
-  </button>`;
-  
-  card.innerHTML = `<div class="media-wrap"><video src="${safeUrl}" controls preload="metadata" playsinline></video></div>
-    <div class="content">
-      <div>
-        <h3>${escapeHtml(video.title)}</h3>
-        <p>${escapeHtml(video.description||'')}</p>
-        <div class="meta">التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</div>
-      </div>
+  const likesCount = video.likedBy ? video.likedBy.length : 0;
+  const deleteBtn = video.uploader?._id===currentUser.id ? `<button class="btn btn-danger btn-sm delete-btn">حذف الفيديو</button>` : '';
+  col.innerHTML = `<div class="video-card" data-video-id="${video._id}">
+    <div class="media-wrap"><video src="${escapeHtml(video.url)}" controls preload="metadata" playsinline></video></div>
+    <div class="p-2">
+      <h5 class="text-primary">${escapeHtml(video.title)}</h5>
+      <p class="text-muted">${escapeHtml(video.description||'')}</p>
+      <div class="text-secondary mb-2">التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</div>
       <div class="actions">
-        ${likeBtnHtml}
-        ${deleteButtonHtml}
+        <button class="btn btn-sm like-btn" style="background:${likedByMe?'#e53e3e':'#2575fc'};color:#fff;">
+          ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
+        </button>
+        ${deleteBtn}
       </div>
-    </div>`;
-  return card;
+    </div>
+  </div>`;
+  return col;
 }
 
-async function loadVideos(filter = {}) {
-  try {
-    let url;
-    if (filter.category || filter.subcategory || filter.uploader) {
-      const params = new URLSearchParams();
-      if (filter.category) params.append('category', filter.category);
-      if (filter.subcategory) params.append('subcategory', filter.subcategory);
-      if (filter.uploader) params.append('uploader', filter.uploader);
-      url = `/videos/search?${params.toString()}`;
-    } else {
-      url = `/users/${currentUser.id}`;
-    }
-
-    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-    if (!res.ok) throw new Error('فشل جلب الفيديوهات');
-
-    let videos = [];
+// Load videos
+async function loadVideos(filter={}){
+  try{
+    let url = filter.category || filter.subcategory ? `/videos/search?` : `/users/${currentUser.id}`;
+    if(filter.category) url += `category=${filter.category}&`;
+    if(filter.subcategory) url += `subcategory=${filter.subcategory}&`;
+    const res = await fetch(url,{ headers:{Authorization:'Bearer '+token}});
+    if(!res.ok) throw new Error('فشل جلب الفيديوهات');
     const data = await res.json();
-    if (url.startsWith('/users/')) {
-      videos = data.videos || [];
-    } else {
-      videos = data || [];
-    }
-
+    const videos = url.startsWith('/users/')? data.videos||[] : data;
     const grid = document.getElementById('videoGrid');
-    grid.innerHTML = '';
-    if (videos.length === 0) {
-      grid.innerHTML = '<p>لا يوجد فيديوهات.</p>';
-      return;
-    }
-
-    videos.forEach(video => {
-      const card = createVideoCard(video);
+    grid.innerHTML='';
+    if(!videos.length){ grid.innerHTML='<p>لا يوجد فيديوهات.</p>'; return; }
+    videos.forEach(v=>{
+      const card = createVideoCard(v);
       grid.appendChild(card);
-
       const delBtn = card.querySelector('.delete-btn');
-      if (delBtn) {
-        delBtn.addEventListener('click', async () => {
-          if (!confirm('هل تريد حذف هذا الفيديو؟')) return;
-          try {
-            const resp = await fetch(`/videos/${video._id}`, {
-              method: 'DELETE',
-              headers: { Authorization: 'Bearer ' + token }
-            });
-            const json = await resp.json();
-            if (resp.ok) { card.remove(); alert('تم حذف الفيديو'); }
-            else { alert(json.error || 'فشل الحذف'); }
-          } catch (err) { console.error(err); alert('حدث خطأ أثناء الحذف'); }
-        });
-      }
+      if(delBtn) delBtn.addEventListener('click', async()=>{
+        if(!confirm('هل تريد حذف هذا الفيديو؟')) return;
+        try{
+          const resp = await fetch(`/videos/${v._id}`,{ method:'DELETE', headers:{Authorization:'Bearer '+token}});
+          const json = await resp.json();
+          if(resp.ok){ card.remove(); alert('تم حذف الفيديو'); } else { alert(json.error||'فشل الحذف'); }
+        } catch(err){ console.error(err); alert('حدث خطأ أثناء الحذف'); }
+      });
     });
-
-    attachLikeButtons(); 
-  } catch (err) {
-    console.error(err);
-    document.getElementById('videoGrid').innerHTML = '<p>حدث خطأ أثناء تحميل الفيديوهات.</p>';
-  }
+    attachLikeButtons();
+  } catch(err){ console.error(err); document.getElementById('videoGrid').innerHTML='<p>حدث خطأ أثناء تحميل الفيديوهات.</p>'; }
 }
 
-async function loadCategories() {
-  try {
-    const res = await fetch('/categories', { headers:{ Authorization:'Bearer '+token }});
+// Load categories
+async function loadCategories(){
+  try{
+    const res = await fetch('/categories',{ headers:{Authorization:'Bearer '+token}});
     if(!res.ok) throw new Error('فشل جلب الفئات');
     const categories = await res.json();
-
-    const categorySelect = document.getElementById('categorySelect');
-    const subcategorySelect = document.getElementById('subcategorySelect');
-
-    categories.forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value = cat.name;
-      opt.textContent = cat.name;
-      categorySelect.appendChild(opt);
-    });
-
-    categorySelect.addEventListener('change', () => {
-      const selected = categories.find(c => c.name === categorySelect.value);
-      subcategorySelect.innerHTML = '<option value="">اختر الفئة الفرعية</option>';
-      if(selected && selected.subcategories){
-        selected.subcategories.forEach(sub => {
-          const opt = document.createElement('option');
-          opt.value = sub;
-          opt.textContent = sub;
-          subcategorySelect.appendChild(opt);
-        });
-      }
+    const catSel = document.getElementById('categorySelect');
+    const subSel = document.getElementById('subcategorySelect');
+    categories.forEach(cat=>{ const opt=document.createElement('option'); opt.value=cat.name; opt.textContent=cat.name; catSel.appendChild(opt); });
+    catSel.addEventListener('change',()=>{
+      const selected = categories.find(c=>c.name===catSel.value);
+      subSel.innerHTML='<option value="">اختر الفئة الفرعية</option>';
+      if(selected && selected.subcategories){ selected.subcategories.forEach(sub=>{ const opt=document.createElement('option'); opt.value=sub; opt.textContent=sub; subSel.appendChild(opt); }); }
     });
   } catch(err){ console.error(err); }
 }
+document.getElementById('filterBtn').addEventListener('click',()=> loadVideos({ category:document.getElementById('categorySelect').value, subcategory:document.getElementById('subcategorySelect').value }));
 
-document.getElementById('filterBtn').addEventListener('click', () => {
-  const category = document.getElementById('categorySelect').value;
-  const subcategory = document.getElementById('subcategorySelect').value;
-  loadVideos({ category, subcategory });
-});
-
-// =================== SEARCH FUNCTION ONLY PROFILE BUTTON ===================
+// Search users
 let searchTimeout;
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', (e) => {
+document.getElementById('searchInput').addEventListener('input', e=>{
   clearTimeout(searchTimeout);
   const query = e.target.value.trim();
   const container = document.getElementById('searchResultsContainer');
-  if(!query){ container.innerHTML = ''; return; }
-
-  searchTimeout = setTimeout(async () => {
-    try {
-      const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`, { headers:{ Authorization:'Bearer '+token }});
+  if(!query){ container.innerHTML=''; return; }
+  searchTimeout = setTimeout(async()=>{
+    try{
+      const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`, { headers:{Authorization:'Bearer '+token}});
       if(!res.ok) throw new Error('فشل البحث');
       const results = await res.json();
-      container.innerHTML = '';
-
-      if(!results || results.length === 0){
-        container.innerHTML = `<div class="search-results"><div class="no-results">لم يتم العثور على مستخدم.</div></div>`;
-        return;
-      }
-
-      const list = document.createElement('div');
-      list.className='search-results';
+      container.innerHTML='';
+      if(!results.length){ container.innerHTML='<div class="search-results"><div class="no-results">لم يتم العثور على مستخدم.</div></div>'; return; }
+      const list = document.createElement('div'); list.className='search-results';
       const ul = document.createElement('ul');
-
-      results.forEach(u => {
+      results.forEach(u=>{
         const li = document.createElement('li');
         const avatar = u.avatar ? `<img src="${escapeHtml(u.avatar)}" alt="avatar">` : `<div style="width:32px;height:32px;border-radius:50%;background:#eee"></div>`;
-        li.innerHTML = `
-          ${avatar}
-          <div>
-            <strong>${escapeHtml(u.name||'')}</strong>
-            <div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div>
-          </div>
-          <button style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">
-            👤 بروفايل
-          </button>
-        `;
-        // Only profile button triggers action
-        li.querySelector('button').addEventListener('click', ()=>{
-          window.location.href = `profile.html?userId=${u._id}`;
-          container.innerHTML = '';
-          searchInput.value = '';
-        });
+        li.innerHTML = `${avatar}<div><strong>${escapeHtml(u.name||'')}</strong><div style="font-size:12px;color:#666">${escapeHtml(u.username||'')}</div></div><button style="margin-left:auto;padding:4px 8px;font-size:12px;cursor:pointer;border:none;background:#2575fc;color:#fff;border-radius:6px">👤 بروفايل</button>`;
+        li.querySelector('button').addEventListener('click',()=>{ window.location.href=`profile.html?userId=${u._id}`; container.innerHTML=''; searchInput.value=''; });
         ul.appendChild(li);
       });
-
       list.appendChild(ul);
       container.appendChild(list);
     } catch(err){ console.error(err); container.innerHTML='<div class="search-results"><div class="no-results">حدث خطأ أثناء البحث.</div></div>'; }
-  }, 300);
+  },300);
 });
 
-// Like / Unlike
-async function toggleLike(videoId, btn) {
+// Like buttons
+async function toggleLike(videoId, btn){
   const liked = btn.classList.contains('liked');
-  btn.classList.toggle('liked', !liked);
-  btn.style.background = !liked ? '#e53e3e' : '#2575fc';
-  btn.textContent = !liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
-
-  try {
-    const res = await fetch(`/videos/${videoId}`, {
-      method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + token,'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
-    });
-
+  btn.classList.toggle('liked',!liked);
+  btn.style.background=!liked?'#e53e3e':'#2575fc';
+  btn.textContent=!liked?'إلغاء الإعجاب 💔':'إعجاب ❤️';
+  try{
+    const res = await fetch(`/videos/${videoId}`,{ method:'PATCH', headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({ action: liked?'unlike':'like' })});
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'فشل العملية');
-    const likesCount = data.likedBy ? data.likedBy.length : 0;
-    btn.textContent = !liked ? `إلغاء الإعجاب 💔 ${likesCount}` : `إعجاب ❤️ ${likesCount}`;
-  } catch(err) {
-    console.error(err);
-    alert('حدث خطأ أثناء العملية');
-    btn.classList.toggle('liked', liked);
-    btn.style.background = liked ? '#e53e3e' : '#2575fc';
-    btn.textContent = liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
-  }
+    if(!res.ok) throw new Error(data.error||'فشل العملية');
+    const likesCount = data.likedBy ? data.likedBy.length :0;
+    btn.textContent=!liked? `إلغاء الإعجاب 💔 ${likesCount}`:`إعجاب ❤️ ${likesCount}`;
+  } catch(err){ console.error(err); alert('حدث خطأ أثناء العملية'); }
 }
-
-function attachLikeButtons() {
-  document.querySelectorAll('.video-card').forEach(card => {
-    const btn = card.querySelector('.like-btn');
-    if(!btn) return;
-    btn.addEventListener('click', () => toggleLike(card.id, btn));
-  });
-}
+function attachLikeButtons(){ document.querySelectorAll('.like-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ const card=btn.closest('.video-card'); if(!card) return; toggleLike(card.dataset.videoId, btn); }); }); }
 
 // Initial load
 loadCategories();

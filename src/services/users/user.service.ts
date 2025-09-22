@@ -76,31 +76,6 @@ export class UserServices {
             return updatedUser.toObject();
     }
 
-    async changeAvatar(userId: string, filePath: string) {
-    if (!userId) throw new Error('Unauthorized');
-
-    const user = await UserModel.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    if (!filePath) throw new Error('No file provided');
-
-    // رفع الصورة إلى Cloudinary
-    const result = await cloudinary.uploader.upload(filePath, {
-      folder: 'avatars',
-      public_id: `avatar_${userId}`,
-      overwrite: true
-    });
-
-    // حذف الملف المحلي بعد الرفع
-    fs.unlinkSync(filePath);
-
-        // تحديث المستخدم في DB
-        user.avatar = result.secure_url;
-        await user.save();
-
-        return user.toObject(); // إرجاع البيانات بصيغة JSON
-    }
-
     async remove(id: Id, params?: Params) {
         if(!Types.ObjectId.isValid(id)) throw new Error('Invalid user ID');
 
@@ -113,6 +88,7 @@ export class UserServices {
 
         return user;
     }
+
     // search: دالة للبحث عن المستخدمين باسم أو username
     async search(query: string) {
         return await UserModel.find({
@@ -126,6 +102,49 @@ export class UserServices {
         // تحديد الحقول التي سيتم إرجاعها فقط (name, username, avatar)
         .select('name username avatar');
     }
+
+    async create(data: any, params?: Params) {
+    const userId = params?.user?.id;
+    if (!userId) throw new Error('Unauthorized');
+
+    const filePath = data.filePath; 
+    if (!filePath) throw new Error('No file provided');
+
+    if (!data.mimetype?.startsWith('image/')) {
+        fs.unlinkSync(filePath);
+        throw new Error('Invalid file type');
+    }
+
+    // جلب المستخدم الحالي
+    const user = await UserModel.findById(userId);
+    if (!user) {
+        fs.unlinkSync(filePath);
+        throw new Error('User not found');
+    }
+
+    // ✅ حذف الصورة القديمة من Cloudinary إذا كانت موجودة
+    if (user.avatarPublicId) {
+        await cloudinary.uploader.destroy(user.avatarPublicId, { resource_type: "image" });
+    }
+
+    // رفع الصورة الجديدة
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+        folder: 'avatars',
+    });
+
+    // تحديث المستخدم بحقل avatar + تخزين public_id
+    user.avatar = uploadResult.secure_url;
+    user.avatarPublicId = uploadResult.public_id;
+    await user.save();
+
+    fs.unlinkSync(filePath);
+
+    return user; // إعادة بيانات المستخدم بعد التحديث
+}
+
+
+    // -------------------- get: إرجاع بيانات المستخدم --------------------
+
 }
 
 // ---------------------------- ملاحظات أمان وميزات ----------------------------

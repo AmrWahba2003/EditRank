@@ -1,62 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إعدادات الحساب</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body {
+    background: #f0f2f5;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 20px;
+  }
+  .settings-container {
+    max-width: 700px;
+    margin: 50px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+  .setting-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.1);
+  }
+  .setting-card h2 {
+    margin-bottom: 15px;
+    color: #2575fc;
+  }
+  .feature-btn {
+    width: 100%;
+    padding: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .feature-btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn-username { background: #2575fc; color: #fff; border: none; }
+  .btn-username:hover { background: #1a5ddb; }
+  .btn-avatar { background: #2575fc; color: #fff; border: none; }
+  .btn-avatar:hover { background: #1a5ddb; }
+  .btn-delete { background: #e53e3e; color: #fff; border: none; }
+  .btn-delete:disabled { background: #999; cursor: not-allowed; }
+  .warning { color: #e53e3e; font-weight: 700; margin-bottom: 10px; }
+  #deleteForm input { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
 <div class="settings-container">
 
   <!-- Change Username -->
   <div class="setting-card">
     <h2>تغيير اسم المستخدم</h2>
-    <input type="text" id="usernameInput" placeholder="اكتب اسم المستخدم الجديد">
-    <button class="feature-btn" id="changeUsernameBtn">تحديث الاسم</button>
+    <input type="text" id="usernameInput" class="form-control mb-2" placeholder="اكتب اسم المستخدم الجديد">
+    <button class="feature-btn btn-username" id="changeUsernameBtn">تحديث الاسم</button>
   </div>
 
   <!-- Change Avatar -->
   <div class="setting-card">
     <h2>تغيير الصورة الشخصية</h2>
-    <input type="file" id="avatarInput" accept="image/*">
-    <button class="feature-btn" id="changeAvatarBtn">تحديث الصورة</button>
+    <input type="file" id="avatarInput" class="form-control mb-2" accept="image/*">
+    <button class="feature-btn btn-avatar" id="changeAvatarBtn">تحديث الصورة</button>
   </div>
 
   <!-- Delete Account -->
   <div class="setting-card">
     <h2>حذف الحساب</h2>
     <p class="warning">⚠️ حذف الحساب سيؤدي إلى حذف جميع الفيديوهات والرسائل بشكل نهائي!</p>
-    <button class="feature-btn" id="deleteToggleBtn">حذف الحساب</button>
+    <button class="feature-btn btn-delete" id="deleteToggleBtn">حذف الحساب</button>
 
     <div id="deleteForm" style="display:none; margin-top:15px;">
       <p>اكتب كلمة <strong>delete</strong> لتأكيد:</p>
-      <input type="text" id="confirmInput" placeholder="اكتب delete هنا">
-      <button id="deleteBtn" disabled>حذف الحساب نهائياً</button>
+      <input type="text" id="confirmInput" class="form-control mb-2" placeholder="اكتب delete هنا">
+      <button id="deleteBtn" class="feature-btn btn-delete" disabled>حذف الحساب نهائياً</button>
     </div>
   </div>
 
 </div>
 
-<style>
-.settings-container{max-width:600px;margin:50px auto;display:flex;flex-direction:column;gap:20px;}
-.setting-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);}
-.setting-card h2{margin-bottom:10px;color:#2575fc;}
-.warning{color:#e53e3e;font-weight:700;}
-.feature-btn{width:100%;padding:12px;background:#2575fc;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:5px;}
-.feature-btn:hover{background:#1a5ddb;transform:translateY(-1px);}
-#deleteBtn{background:#e53e3e;margin-top:10px;}
-#deleteBtn:disabled{background:#999;cursor:not-allowed;}
-</style>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// get JWT and current user
+// ------------------ وظائف الصفحة الأصلية ------------------
 const token = localStorage.getItem('jwt');
 let currentUser = {};
 try { currentUser = JSON.parse(atob(token.split('.')[1])); } catch(e){ console.error(e); }
 
-// -------------------- Delete Account --------------------
+// Delete Account
 const deleteToggleBtn = document.getElementById('deleteToggleBtn');
 const deleteForm = document.getElementById('deleteForm');
 deleteToggleBtn.addEventListener('click', () => {
   deleteForm.style.display = deleteForm.style.display === 'none' ? 'block' : 'none';
 });
-
 const input = document.getElementById('confirmInput');
 const deleteBtn = document.getElementById('deleteBtn');
 input.addEventListener('input', () => { deleteBtn.disabled = input.value.trim().toLowerCase() !== 'delete'; });
-
 deleteBtn.addEventListener('click', async () => {
   if(!confirm('هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
   deleteBtn.disabled = true;
@@ -76,7 +117,7 @@ deleteBtn.addEventListener('click', async () => {
   }
 });
 
-// -------------------- Change Username --------------------
+// Change Username
 const usernameInput = document.getElementById('usernameInput');
 const changeUsernameBtn = document.getElementById('changeUsernameBtn');
 changeUsernameBtn.addEventListener('click', async () => {
@@ -97,6 +138,8 @@ changeUsernameBtn.addEventListener('click', async () => {
     if(!res.ok) throw new Error(data.error || 'حدث خطأ أثناء تحديث الاسم');
     alert('تم تحديث اسم المستخدم بنجاح!');
     currentUser.username = newUsername;
+    localStorage.setItem('currentUsername', newUsername);
+    localStorage.setItem('usernameUpdated', Date.now());
   } catch(err) {
     console.error(err);
     alert(err.message);
@@ -106,7 +149,7 @@ changeUsernameBtn.addEventListener('click', async () => {
   }
 });
 
-// -------------------- Change Avatar --------------------
+// Change Avatar
 const avatarInput = document.getElementById('avatarInput');
 const changeAvatarBtn = document.getElementById('changeAvatarBtn');
 changeAvatarBtn.addEventListener('click', async () => {
@@ -119,7 +162,7 @@ changeAvatarBtn.addEventListener('click', async () => {
   formData.append('avatar', file);
 
   try {
-    const res = await fetch(`/users/${currentUser.id}/change-avatar`, {
+    const res = await fetch(`/users/upload-avatar`, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token },
       body: formData
@@ -128,6 +171,8 @@ changeAvatarBtn.addEventListener('click', async () => {
     if(!res.ok) throw new Error(data.error || 'حدث خطأ أثناء تحديث الصورة');
     alert('تم تحديث الصورة الشخصية بنجاح!');
     currentUser.avatar = data.avatar;
+    localStorage.setItem('currentUserAvatar', data.avatar);
+    localStorage.setItem('avatarUpdated', Date.now());
   } catch(err) {
     console.error(err);
     alert(err.message);
@@ -137,3 +182,5 @@ changeAvatarBtn.addEventListener('click', async () => {
   }
 });
 </script>
+</body>
+</html>

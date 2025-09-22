@@ -1,166 +1,90 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>بروفايل المستخدم | EditRank</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif}
-  body{background:#f0f2f5;color:#333;line-height:1.6}
-
-  header{background:#2575fc;color:#fff;padding:15px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-  header h1{margin:0;font-size:1.4rem}
-
-  .profile-header{display:flex;align-items:center;gap:15px;justify-content:center;margin:25px auto;flex-wrap:wrap;text-align:center}
-  .profile-header img{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #2575fc}
-  .profile-header h2{margin:10px 0 5px;font-size:1.2rem}
-  .profile-header p{margin:0;color:#555;font-size:.9rem}
-
-  main{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
-
-  .video-card{background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);overflow:hidden;transition:.3s;display:flex;flex-direction:column}
-  .video-card:hover{transform:translateY(-4px);box-shadow:0 10px 25px rgba(0,0,0,.2)}
-
-  .media-wrap{position:relative;width:100%;padding-top:56.25%;background:#000}
-  .media-wrap video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:#000}
-  @supports (aspect-ratio:16/9){
-    .media-wrap{padding-top:0}
-    .media-wrap video{position:static;aspect-ratio:16/9;width:100%;height:auto}
-  }
-
-  .content{padding:15px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
-  .content h3{margin:0 0 8px;color:#2575fc;font-size:1rem}
-  .content p{margin:0 0 8px;color:#555;font-size:.9rem}
-  .content small{color:#777;font-size:.8rem}
-  .actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
-  button.btn{background:#2575fc;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;transition:all .2s}
-  button.btn:hover{background:#0053ba;transform:translateY(-1px)}
-  button.liked{background:#e53e3e}
-
-  /* Chat Box */
-  #chatContainer{
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 300px;
-    max-height: 400px;
-    background:#fff;
-    border:1px solid #ccc;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.2);
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-    z-index:1000;
-  }
-  #chatHeader{
-    background:#2575fc;
-    color:#fff;
-    padding:10px;
-    cursor:move;
-    text-align:center;
-  }
-  #chatMessages{
-    flex:1;
-    padding:10px;
-    overflow-y:auto;
-    background:#f9f9f9;
-  }
-  #chatInputContainer{
-    display:flex;
-    border-top:1px solid #ccc;
-  }
-  #chatInput{
-    flex:1;
-    padding:8px;
-    border:none;
-    outline:none;
-  }
-  #sendBtn{
-    padding:8px 12px;
-    border:none;
-    background:#2575fc;
-    color:#fff;
-    cursor:pointer;
-  }
-
-  /* Responsive */
-  @media(max-width:700px){
-    header h1{font-size:1.2rem}
-    .profile-header img{width:75px;height:75px}
-    .profile-header h2{font-size:1rem}
-  }
-  @media(max-width:480px){
-    main{grid-template-columns:1fr}
-    .profile-header{flex-direction:column}
-  }
+body {
+  background:#f0f2f5;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  color:#333;
+}
+.profile-header {
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:15px;
+  flex-wrap:wrap;
+  text-align:center;
+  margin:20px auto;
+  max-width:900px;
+}
+.profile-header img {
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #2575fc;
+}
+.video-card {
+  transition:.3s;
+}
+.video-card:hover {transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,.2);}
+.video-card video {width:100%; height:auto; border-radius:8px;}
+.actions button { margin-top:5px; }
 </style>
 </head>
 <body>
-<header>
-  <h1>بروفايل المستخدم</h1>
-</header>
 
-<div class="profile-header" id="profileHeader"></div>
-<main id="videoGrid"></main>
-
-<!-- Chat Container -->
-<div id="chatContainer">
-  <div id="chatHeader">الدردشة مع المستخدم</div>
-  <div id="chatMessages"></div>
-  <div id="chatInputContainer">
-    <input type="text" id="chatInput" placeholder="اكتب رسالتك..."/>
-    <button id="sendBtn">إرسال</button>
-  </div>
+<div class="container">
+  <div class="profile-header" id="profileHeader"></div>
+  <div class="row g-3" id="videoGrid"></div>
 </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const token = localStorage.getItem('jwt');
 if(!token){ location.href = '/'; }
 
-// Initialize socket once
-const socket = io({ auth: { token } });
-
-// Get userId from URL
 const urlParams = new URLSearchParams(window.location.search);
 const profileUserId = urlParams.get('userId');
-if(!profileUserId){
-  document.body.innerHTML = "<p style='text-align:center;margin-top:50px'>لم يتم تحديد المستخدم.</p>";
-  throw new Error("User ID missing");
-}
+if(!profileUserId){ document.body.innerHTML="<p class='text-center mt-5'>لم يتم تحديد المستخدم.</p>"; throw new Error("User ID missing"); }
 
-// Decode current user
 let currentUser = {};
 try { currentUser = JSON.parse(atob(token.split('.')[1])); } 
 catch(e){ console.error('Invalid token', e); }
 
-// Escape HTML
 function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-// -------------------- Video Functions --------------------
+// ---------- Video Cards ----------
 function createVideoCard(video){
-  const card=document.createElement('div');
-  card.className='video-card';
-  card.id = video._id;
+  const col = document.createElement('div');
+  col.className = 'col-sm-6 col-md-4';
+  col.id = video._id;
+
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likesCount = video.likedBy ? video.likedBy.length : 0;
 
-  card.innerHTML=`
-    <div class="media-wrap">
-      <video src="${escapeHtml(video.url||'')}" controls></video>
-    </div>
-    <div class="content">
-      <h3>${escapeHtml(video.title||'')}</h3>
-      <p>${escapeHtml(video.description||'')}</p>
-      <small>التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
-      <div class="actions">
-        <button class="btn like-btn${likedByMe?' liked':''}" style="background:${likedByMe?'#e53e3e':'#2575fc'}">
-          ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
-        </button>
+  col.innerHTML=`
+    <div class="card video-card h-100">
+      <video src="${escapeHtml(video.url||'')}" controls class="card-img-top"></video>
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title text-primary">${escapeHtml(video.title||'')}</h5>
+        <p class="card-text text-muted">${escapeHtml(video.description||'')}</p>
+        <small class="text-secondary">التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
+        <div class="actions mt-auto">
+          <button class="btn ${likedByMe?'btn-danger':'btn-primary'} w-100 like-btn">
+            ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
+          </button>
+        </div>
       </div>
     </div>`;
-  return card;
+  return col;
 }
 
 async function loadProfile(){
@@ -169,135 +93,58 @@ async function loadProfile(){
     if(!res.ok) throw new Error("فشل جلب بيانات المستخدم");
     const user = await res.json();
 
-    // Profile header
     const header=document.getElementById('profileHeader');
-    const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div style="width:90px;height:90px;border-radius:50%;background:#ddd"></div>`;
+    const savedAvatar = localStorage.getItem('currentUserAvatar');
+    if(savedAvatar) user.avatar = savedAvatar;
+
+    const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
     header.innerHTML=`${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
 
-    // Videos
     const grid=document.getElementById('videoGrid');
     grid.innerHTML='';
     if(!user.videos || user.videos.length===0){ 
-      grid.innerHTML='<p style="grid-column:1/-1;text-align:center">لا يوجد فيديوهات.</p>'; 
+      grid.innerHTML='<p class="text-center" style="grid-column:1/-1;">لا يوجد فيديوهات.</p>'; 
     } else { 
       user.videos.forEach(v=>grid.appendChild(createVideoCard(v)));
       attachLikeButtons();
     }
-  }catch(err){
-    console.error(err);
-    document.body.innerHTML="<p style='text-align:center;margin-top:50px'>حدث خطأ أثناء تحميل البروفايل.</p>";
-  }
+  }catch(err){ console.error(err); document.body.innerHTML="<p class='text-center mt-5'>حدث خطأ أثناء تحميل البروفايل.</p>"; }
 }
 
-// Like / Unlike
+// ---------- Like / Unlike ----------
 async function toggleLike(videoId, btn){
-  const liked = btn.classList.contains('liked');
-  btn.classList.toggle('liked', !liked);
-  btn.style.background = !liked ? '#e53e3e' : '#2575fc';
+  const liked = btn.classList.contains('btn-danger');
+  btn.classList.toggle('btn-danger', !liked);
+  btn.classList.toggle('btn-primary', liked);
   btn.textContent = !liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
 
   try{
     const res = await fetch(`/videos/${videoId}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
+      method:'PATCH',
+      headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+      body:JSON.stringify({ action: liked?'unlike':'like' })
     });
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'فشل العملية');
-
+    if(!res.ok) throw new Error(data.error||'فشل العملية');
     const likesCount = data.likedBy ? data.likedBy.length : 0;
     btn.textContent = !liked ? `إلغاء الإعجاب 💔 ${likesCount}` : `إعجاب ❤️ ${likesCount}`;
-  } catch(err){
+  }catch(err){
     console.error(err);
     alert('حدث خطأ أثناء العملية');
-    btn.classList.toggle('liked', liked);
-    btn.style.background = liked ? '#e53e3e' : '#2575fc';
-    btn.textContent = liked ? 'إلغاء الإعجاب 💔' : 'إعجاب ❤️';
+    btn.classList.toggle('btn-danger', liked);
+    btn.classList.toggle('btn-primary', !liked);
   }
 }
 
 function attachLikeButtons(){
-  document.querySelectorAll('.video-card').forEach(card=>{
-    const btn = card.querySelector('.like-btn');
-    if(!btn) return;
-    btn.addEventListener('click', ()=> toggleLike(card.id, btn));
+  document.querySelectorAll('.col-sm-6.col-md-4').forEach(col=>{
+    const btn = col.querySelector('.like-btn');
+    if(btn) btn.addEventListener('click', ()=> toggleLike(col.id, btn));
   });
 }
 
-// -------------------- Chat Functions --------------------
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-const chatContainer = document.getElementById('chatContainer');
-const chatHeader = document.getElementById('chatHeader');
-
-function addMessage(msg){
-  const div = document.createElement('div');
-  const isMe = msg.from._id === currentUser.id;
-  div.style.textAlign = isMe?'right':'left';
-  div.style.margin='5px 0';
-  div.innerHTML=`<strong>${isMe?'أنا':'المستخدم'}:</strong> ${escapeHtml(msg.content)}`;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Load chat history
-async function loadChatHistory(){
-  try{
-    const res = await fetch(`/messages?with=${profileUserId}`, { headers:{ Authorization:'Bearer '+token } });
-    if(!res.ok) return;
-    const messages = await res.json();
-    messages.forEach(addMessage);
-  }catch(err){ console.error(err); }
-}
-
-// Send message
-sendBtn.addEventListener('click', async () => {
-  const content = chatInput.value.trim();
-  if (!content) return;
-
-  const msg = { to: profileUserId, content };
-  chatInput.value = '';
-
-  addMessage({ from: { _id: currentUser.id }, content });
-
-  socket.emit('private_message', msg);
-
-  await fetch('/messages', {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token },
-    body: JSON.stringify(msg)
-  });
-});
-
-// Receive messages
-socket.on('message', (msg) => {
-  if (msg.from._id === profileUserId || msg.to === profileUserId) addMessage(msg);
-});
-
-// -------------------- Draggable Chat --------------------
-let isDragging=false, offsetX, offsetY;
-chatHeader.addEventListener('mousedown', e=>{
-  isDragging=true;
-  const rect = chatContainer.getBoundingClientRect();
-  offsetX = e.clientX - rect.left;
-  offsetY = e.clientY - rect.top;
-});
-document.addEventListener('mouseup', ()=>{ isDragging=false; });
-document.addEventListener('mousemove', e=>{
-  if(!isDragging) return;
-  chatContainer.style.left = e.clientX - offsetX + 'px';
-  chatContainer.style.top = e.clientY - offsetY + 'px';
-  chatContainer.style.bottom = 'auto';
-  chatContainer.style.right = 'auto';
-});
-
-// -------------------- Initialize --------------------
+// ---------- Initialize ----------
 loadProfile();
-loadChatHistory();
 </script>
 </body>
 </html>

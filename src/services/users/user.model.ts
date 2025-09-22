@@ -15,6 +15,7 @@ export interface IUser extends Document {
     name: string;       // اسم المستخدم
     email: string;      // البريد الإلكتروني
     avatar?: string;    // رابط الصورة الشخصية (اختياري)
+    avatarPublicId?: string;  // 👈 لازم نضيف هذا لتخزين public_id
     username: string;   // اسم المستخدم الخاص بالنظام
 }
 
@@ -33,6 +34,8 @@ const userSchema = new Schema<IUser>({
     // avatar: رابط الصورة، اختياري
     avatar: { type: String },
 
+    avatarPublicId: { type: String }, // 👈 الحقل الجديد
+    
     // username: اسم المستخدم داخل النظام، مطلوب وفريد
     username: { type: String, required: true, unique: true },
 });

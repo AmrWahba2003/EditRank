@@ -1,67 +1,53 @@
-// ---------------------------- Imports ----------------------------
-import fs from 'fs';
-// import: كلمة مفتاحية في TypeScript/JavaScript لاستيراد وحدة (module) أو مكتبة
+// ---------------------------- Imports ----------------------------{
+  // import: كلمة مفتاحية في TypeScript/JavaScript لاستيراد وحدة (module) أو مكتبة
 // feathers: اسم المكتبة المستوردة، مكتبة FeathersJS الأساسية لإنشاء تطبيقات real-time وREST
-// '@feathersjs/feathers': مسار الحزمة (package) في node_modules
+// '@feathersjs/feathers': مسار الحزمة (package) في node_modules}
 import feathers from '@feathersjs/feathers';
-
 // import: استيراد Feathers-Express
 // express: كائن سيتم استخدامه لدمج Feathers مع Express
 // '@feathersjs/express': حزمة لدمج Feathers مع Express، تمكنك من التعامل مع REST routes + middleware
 // الفرق: Express وحده لا يدعم مفهوم Service أو real-time sockets
 import express from '@feathersjs/express';
-
-// import: استيراد body-parser
+  // import: استيراد body-parser
 // body-parser: مكتبة لتحليل بيانات body في HTTP request
 // يمكنها تحليل JSON و URL-encoded form
 // ملاحظة: Express >= 4.16 يمكنه استخدام express.json() و express.urlencoded() بدل body-parser
 import bodyParser from 'body-parser';
-
 // import: استيراد مكتبة path
 // path: مكتبة Node.js للعمل مع مسارات الملفات على النظام
 // تستخدم لتحديد موقع ملفات ثابتة مثل index.html أو مجلد public
 import path from 'path';
-
 // import: استيراد مكتبة jsonwebtoken
 // jwt: مكتبة لإنشاء والتحقق من JSON Web Tokens
 // تستخدم للتحقق من هوية المستخدم في REST endpoints وFeathers services
 import jwt from 'jsonwebtoken';
-
 // import: استيراد إعدادات Google OAuth + JWT الخاصة بالمشروع
 // setupAuth: دالة تضبط Google OAuth وتهيئة JWT
 import { setupAuth } from './app/google.auth';
-
 // import: استيراد hook للتحقق من JWT على مستوى Feathers services
 // verifyJWT: دالة تستخدم داخل hooks على الـ services لحماية CRUD operations
 import { verifyJWT } from './app/jwt.middleware';
-
 // import: استيراد الخدمات (Services) الخاصة بالمشروع
 // كل Service مسؤول عن نوع بيانات معين (Users, Videos, Categories, Messages)
 import { VideoService } from './services/videos/video.service';
 import { UserServices } from './services/users/user.service';
 import { CategoryService } from "./services/categories/category.service";
 import { MessageService } from './services/messages/message.service';
-
 // import: استيراد multer لإدارة رفع الملفات
 // multer: مكتبة لإنشاء Middleware للتعامل مع multipart/form-data (رفع الملفات)
 import multer from 'multer';
-
 // upload: متغير يقوم بتخزين إعدادات multer
 // dest: المجلد الذي سيتم حفظ الملفات فيه عند رفعها
 const upload = multer({ dest: 'uploads/' });
-
-// import: استيراد Types من Express
+ // import: استيراد Types من Express
 // Request: يمثل الطلب القادم من العميل
 // Response: يمثل الرد المرسل للعميل
 // NextFunction: يمثل الدالة التالية في سلسلة الـ middleware
 import { Request, Response, NextFunction } from 'express';
-
 // import: استيراد HookContext من Feathers
 // يمثل سياق الـ service (params, data, id, result) داخل الـ hooks
 import { HookContext } from '@feathersjs/feathers';
-
 // ---------------------------- Middleware للتحقق من JWT ----------------------------
-
 // const: لإنشاء ثابت
 // verifyJWTMiddleware: اسم الدالة التي ستعمل كـ middleware على REST routes
 // (req, res, next): دوال Express الأساسية للـ middleware
@@ -69,22 +55,17 @@ const verifyJWTMiddleware = (req: Request, res: Response, next: NextFunction) =>
   try {
     // قراءة Authorization header من الطلب
     const authHeader = req.headers.authorization;
-
     // إذا لم يوجد Authorization header
     if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
-
     // Authorization header غالبًا: "Bearer <token>"
     // split(' '): تقسيم النص عند المسافة لاستخراج التوكن
     const token = authHeader.split(' ')[1];
-
     // التحقق من صحة التوكن
     // jwt.verify: تتحقق من أن التوكن صالح وغير معدل
     // process.env.JWT_SECRET!: المفتاح السري المخزن في البيئة
     const payload: any = jwt.verify(token, process.env.JWT_SECRET!);
-
     // تمرير معلومات المستخدم إلى req.user
     (req as any).user = payload;
-
     // الانتقال للـ middleware التالي
     next();
   } catch (err) {
@@ -159,11 +140,7 @@ export const initializeApp = async () => {
     }
   });
 
-  
 
-
-
-  
   // -------------------- تسجيل الخدمات في التطبيق --------------------
   // app.use: تسجيل service على مسار معين
   // الفرق مع Express: هنا نستخدم Feathers Service وليس Route عادي
@@ -225,22 +202,23 @@ export const initializeApp = async () => {
     }
   });
   // -------------------- Change Avatar --------------------
-  app.post('/users/change-avatar', verifyJWTMiddleware, upload.single('avatar'), async (req: Request, res: Response) => {
+  app.post('/users/upload-avatar', verifyJWTMiddleware, upload.single('avatar'), async (req: Request, res: Response) => {
   try {
     const file = req.file;
     const userId = (req as any).user.id;
 
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-    // استدعاء خدمة تغيير avatar
-    const updatedUser = await userService.changeAvatar(userId, file.path);
+    const user = await userService.create({
+      filePath: file.path,
+      mimetype: file.mimetype
+    }, { user: { id: userId } });
 
-    res.json(updatedUser);
+    res.json(user);
   } catch (err: any) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
-  });
+});
 
   // -------------------- الصفحة الرئيسية --------------------
   app.get('/', (_req: Request, res: Response) => {

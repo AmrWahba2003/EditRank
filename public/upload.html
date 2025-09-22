@@ -4,96 +4,156 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>رفع فيديو | EditRank</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif}
-  body{background:#f0f2f5;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:15px}
-
-  form{
-    background:#fff;padding:25px;border-radius:12px;
-    box-shadow:0 6px 20px rgba(0,0,0,.1);
-    display:flex;flex-direction:column;gap:12px;width:100%;max-width:450px;position:relative
+  body {
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 15px;
   }
-
-  h2{margin-bottom:10px;text-align:center;color:#2575fc}
-  input,textarea,select,button{
-    width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;font-size:.95rem
+  .upload-card {
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 25px rgba(0,0,0,.15);
+    position: relative;
   }
-
-  textarea{resize:none}
-  button{
-    background:#2575fc;color:#fff;border:none;font-weight:700;cursor:pointer;transition:.3s
+  .timer {
+    position: absolute;
+    top: -25px;
+    right: 0;
+    font-size: .85rem;
+    color: #555;
   }
-  button:hover{background:#0053ba}
-  button:disabled{background:#999;cursor:not-allowed}
-
-  .timer{position:absolute;top:-25px;right:0;font-size:.85rem;color:#555}
-
-  /* Responsive */
-  @media(max-width:500px){
-    form{padding:20px;gap:10px}
-    h2{font-size:1.1rem}
+  .video-preview {
+    width: 100%;
+    max-height: 250px;
+    margin-bottom: 15px;
+    display: none;
+    border-radius: 8px;
+  }
+  .progress {
+    height: 20px;
+    margin-bottom: 15px;
+    display: none;
+  }
+  .alert-custom {
+    display: none;
   }
 </style>
 </head>
 <body>
 
-<form id="uploadForm">
+<div class="upload-card">
   <div class="timer" id="timer">00:00</div>
-  <h2>رفع فيديو جديد</h2>
+  <h2 class="text-center text-primary mb-4">رفع فيديو جديد</h2>
 
-  <input type="text" name="title" placeholder="عنوان الفيديو" required>
-  <textarea name="description" placeholder="وصف الفيديو" rows="3"></textarea>
+  <!-- رسالة النجاح/الخطأ -->
+  <div id="alertBox" class="alert alert-success alert-custom" role="alert"></div>
 
-  <select name="category" id="categorySelect" required>
-    <option value="">اختر الفئة</option>
-  </select>
+  <!-- معاينة الفيديو -->
+  <video id="videoPreview" class="video-preview" controls></video>
 
-  <select name="subcategory" id="subcategorySelect" required>
-    <option value="">اختر الفئة الفرعية</option>
-  </select>
+  <!-- شريط التقدم -->
+  <div class="progress">
+    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+  </div>
 
-  <input type="file" name="video" accept="video/*" required>
-  <button type="submit" id="uploadBtn">رفع الفيديو</button>
-</form>
+  <form id="uploadForm" class="needs-validation" novalidate>
+    <div class="mb-3">
+      <input type="text" class="form-control" name="title" placeholder="عنوان الفيديو" required>
+      <div class="invalid-feedback">الرجاء إدخال عنوان الفيديو.</div>
+    </div>
 
+    <div class="mb-3">
+      <textarea class="form-control" name="description" rows="3" placeholder="وصف الفيديو"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <select class="form-select" name="category" id="categorySelect" required>
+        <option value="">اختر الفئة</option>
+      </select>
+      <div class="invalid-feedback">الرجاء اختيار الفئة.</div>
+    </div>
+
+    <div class="mb-3">
+      <select class="form-select" name="subcategory" id="subcategorySelect" required>
+        <option value="">اختر الفئة الفرعية</option>
+      </select>
+      <div class="invalid-feedback">الرجاء اختيار الفئة الفرعية.</div>
+    </div>
+
+    <div class="mb-3">
+      <input type="file" class="form-control" name="video" id="videoInput" accept="video/*" required>
+      <div class="invalid-feedback">الرجاء اختيار فيديو للرفع.</div>
+    </div>
+
+    <button type="submit" id="uploadBtn" class="btn btn-primary w-100">رفع الفيديو</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const token = localStorage.getItem('jwt');
 if(!token) location.href='/';
 
-const form=document.getElementById('uploadForm');
-const uploadBtn=document.getElementById('uploadBtn');
-const timerEl=document.getElementById('timer');
-const categorySelect=document.getElementById('categorySelect');
-const subcategorySelect=document.getElementById('subcategorySelect');
+const form = document.getElementById('uploadForm');
+const uploadBtn = document.getElementById('uploadBtn');
+const timerEl = document.getElementById('timer');
+const categorySelect = document.getElementById('categorySelect');
+const subcategorySelect = document.getElementById('subcategorySelect');
+const videoInput = document.getElementById('videoInput');
+const videoPreview = document.getElementById('videoPreview');
+const progressBar = document.getElementById('progressBar');
+const progressContainer = document.querySelector('.progress');
+const alertBox = document.getElementById('alertBox');
+
+// معاينة الفيديو قبل الرفع
+videoInput.addEventListener('change', ()=>{
+  const file = videoInput.files[0];
+  if(file){
+    videoPreview.src = URL.createObjectURL(file);
+    videoPreview.style.display = 'block';
+  } else {
+    videoPreview.style.display = 'none';
+  }
+});
 
 // جلب الفئات
 async function loadCategories(){
   try{
-    const res=await fetch('/categories',{headers:{Authorization:'Bearer '+token}});
+    const res = await fetch('/categories',{headers:{Authorization:'Bearer '+token}});
     if(!res.ok) throw new Error('فشل جلب الفئات');
-    const categories=await res.json();
+    const categories = await res.json();
     categories.forEach(cat=>{
-      const opt=document.createElement('option');
-      opt.value=cat.name;
-      opt.textContent=cat.name;
+      const opt = document.createElement('option');
+      opt.value = cat.name;
+      opt.textContent = cat.name;
       categorySelect.appendChild(opt);
     });
   }catch(err){console.error(err);}
 }
 
 // عند اختيار الفئة عرض الفئات الفرعية
-categorySelect.addEventListener('change',async ()=>{
-  const selected=categorySelect.value;
-  subcategorySelect.innerHTML='<option value="">اختر الفئة الفرعية</option>';
+categorySelect.addEventListener('change', async ()=>{
+  const selected = categorySelect.value;
+  subcategorySelect.innerHTML = '<option value="">اختر الفئة الفرعية</option>';
   if(!selected) return;
   try{
-    const res=await fetch('/categories',{headers:{Authorization:'Bearer '+token}});
-    const categories=await res.json();
-    const cat=categories.find(c=>c.name===selected);
+    const res = await fetch('/categories',{headers:{Authorization:'Bearer '+token}});
+    const categories = await res.json();
+    const cat = categories.find(c=>c.name===selected);
     if(cat && cat.subcategories){
       cat.subcategories.forEach(sub=>{
-        const opt=document.createElement('option');
-        opt.value=sub; opt.textContent=sub;
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
         subcategorySelect.appendChild(opt);
       });
     }
@@ -102,45 +162,87 @@ categorySelect.addEventListener('change',async ()=>{
 
 loadCategories();
 
-// رفع الفيديو
-form.addEventListener('submit',async e=>{
+// رفع الفيديو مع شريط تقدم
+form.addEventListener('submit', async e=>{
   e.preventDefault();
-  uploadBtn.disabled=true; uploadBtn.textContent='جارٍ الرفع...';
+  if(!form.checkValidity()){
+    e.stopPropagation();
+    form.classList.add('was-validated');
+    return;
+  }
 
-  let seconds=0; timerEl.textContent='00:00';
-  const interval=setInterval(()=>{
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'جارٍ الرفع...';
+  progressContainer.style.display = 'block';
+  progressBar.style.width = '0%';
+  progressBar.textContent = '0%';
+
+  let seconds = 0; timerEl.textContent = '00:00';
+  const interval = setInterval(()=>{
     seconds++;
-    const m=String(Math.floor(seconds/60)).padStart(2,'0');
-    const s=String(seconds%60).padStart(2,'0');
-    timerEl.textContent=`${m}:${s}`;
+    const m = String(Math.floor(seconds/60)).padStart(2,'0');
+    const s = String(seconds%60).padStart(2,'0');
+    timerEl.textContent = `${m}:${s}`;
   },1000);
 
-  const formData=new FormData(form);
+  const formData = new FormData(form);
 
   try{
-    const res=await fetch('/videos/upload',{
-      method:'POST',
-      headers:{Authorization:'Bearer '+token},
-      body:formData
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/videos/upload');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+
+    xhr.upload.addEventListener('progress', e => {
+      if(e.lengthComputable){
+        const percent = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = percent + '%';
+      }
     });
-    clearInterval(interval);
-    const data=await res.json();
-    if(res.ok){
-      alert('تم رفع الفيديو بنجاح!');
-      window.location.href='home.html';
-    }else{
-      alert(data.error||'حدث خطأ أثناء رفع الفيديو');
-      uploadBtn.disabled=false; uploadBtn.textContent='رفع الفيديو';
-      timerEl.textContent='00:00';
-    }
-  }catch(err){
+
+    xhr.onload = function(){
+      clearInterval(interval);
+      if(xhr.status >= 200 && xhr.status < 300){
+        alertBox.className = 'alert alert-success alert-custom';
+        alertBox.textContent = 'تم رفع الفيديو بنجاح!';
+        alertBox.style.display = 'block';
+        setTimeout(()=>window.location.href='home.html',1500);
+      } else {
+        const data = JSON.parse(xhr.responseText);
+        showAlert(data.error || 'حدث خطأ أثناء رفع الفيديو','danger');
+        resetForm();
+      }
+    };
+
+    xhr.onerror = function(){
+      clearInterval(interval);
+      showAlert('حدث خطأ أثناء رفع الفيديو','danger');
+      resetForm();
+    };
+
+    xhr.send(formData);
+  } catch(err){
     console.error(err);
     clearInterval(interval);
-    alert('حدث خطأ أثناء رفع الفيديو');
-    uploadBtn.disabled=false; uploadBtn.textContent='رفع الفيديو';
-    timerEl.textContent='00:00';
+    showAlert('حدث خطأ أثناء رفع الفيديو','danger');
+    resetForm();
   }
 });
+
+function showAlert(msg,type){
+  alertBox.className = `alert alert-${type} alert-custom`;
+  alertBox.textContent = msg;
+  alertBox.style.display = 'block';
+}
+
+function resetForm(){
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = 'رفع الفيديو';
+  timerEl.textContent = '00:00';
+  progressContainer.style.display = 'none';
+  progressBar.style.width = '0%';
+  progressBar.textContent = '0%';
+}
 </script>
 
 </body>
