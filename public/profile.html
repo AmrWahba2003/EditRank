@@ -10,7 +10,6 @@ body {
   background:#f0f2f5;
   font-family:'Segoe UI',Tahoma,sans-serif;
   color:#333;
-  padding-top:20px;
 }
 .profile-header {
   background:#fff;
@@ -37,7 +36,7 @@ body {
   transition:.3s;
 }
 .video-card:hover {
-  transform:translateY(-4px);
+  transform:translateY(-4px); 
   box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
 .video-card video {
@@ -47,9 +46,6 @@ body {
 }
 .actions button {
   margin-top:5px;
-}
-@media(max-width:576px){
-  .profile-header { flex-direction:column; }
 }
 </style>
 </head>
@@ -66,25 +62,36 @@ if(!token){ location.href = '/'; }
 
 const urlParams = new URLSearchParams(window.location.search);
 const profileUserId = urlParams.get('userId');
-if(!profileUserId){ document.body.innerHTML="<p class='text-center mt-5'>لم يتم تحديد المستخدم.</p>"; throw new Error("User ID missing"); }
+if(!profileUserId){ 
+  document.body.innerHTML="<p class='text-center mt-5'>لم يتم تحديد المستخدم.</p>"; 
+  throw new Error("User ID missing"); 
+}
 
 let currentUser = {};
 try { currentUser = JSON.parse(atob(token.split('.')[1])); } 
 catch(e){ console.error('Invalid token', e); }
 
-function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+// وظيفة لتفادي XSS
+function escapeHtml(str){ 
+  return String(str||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;'); 
+}
 
-// ---------- Video Cards ----------
+// ---------- إنشاء بطاقة الفيديو ----------
 function createVideoCard(video){
   const col = document.createElement('div');
-  col.className = 'col-12 col-sm-6 col-md-4';
+  col.className = 'col-sm-6 col-md-4';
   col.id = video._id;
 
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likesCount = video.likedBy ? video.likedBy.length : 0;
-  const isOwner = video.uploader?._id === currentUser.id;
+  const isOwner = video.uploader && video.uploader._id.toString() === currentUser.id.toString();
 
-  col.innerHTML=`
+  col.innerHTML = `
     <div class="card video-card h-100">
       <video src="${escapeHtml(video.url||'')}" controls class="card-img-top"></video>
       <div class="card-body d-flex flex-column">
@@ -110,12 +117,12 @@ function createVideoCard(video){
           method:'DELETE',
           headers:{ Authorization:'Bearer '+token }
         });
-        const json = await res.json();
+        const data = await res.json();
         if(res.ok){
           col.remove();
           alert('تم حذف الفيديو');
         } else {
-          alert(json.error || 'فشل الحذف');
+          alert(data.error || 'فشل الحذف');
         }
       } catch(err){
         console.error(err);
@@ -127,18 +134,21 @@ function createVideoCard(video){
   return col;
 }
 
-// ---------- Load Profile ----------
+// ---------- تحميل البروفايل ----------
 async function loadProfile(){
   try{
     const res = await fetch(`/users/${profileUserId}`, { headers:{ Authorization:'Bearer '+token } });
     if(!res.ok) throw new Error("فشل جلب بيانات المستخدم");
     const user = await res.json();
 
-    const header=document.getElementById('profileHeader');
-    const avatar=user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
-    header.innerHTML=`${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
+    const header = document.getElementById('profileHeader');
+    const savedAvatar = localStorage.getItem('currentUserAvatar');
+    if(savedAvatar) user.avatar = savedAvatar;
 
-    const grid=document.getElementById('videoGrid');
+    const avatar = user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="avatar">` : `<div class="bg-secondary" style="width:90px;height:90px;border-radius:50%"></div>`;
+    header.innerHTML = `${avatar}<div><h2>${escapeHtml(user.name||'مستخدم')}</h2><p>@${escapeHtml(user.username||'')}</p></div>`;
+
+    const grid = document.getElementById('videoGrid');
     grid.innerHTML='';
     if(!user.videos || user.videos.length===0){ 
       grid.innerHTML='<p class="text-center" style="grid-column:1/-1;">لا يوجد فيديوهات.</p>'; 
@@ -146,7 +156,10 @@ async function loadProfile(){
       user.videos.forEach(v=>grid.appendChild(createVideoCard(v)));
       attachLikeButtons();
     }
-  }catch(err){ console.error(err); document.body.innerHTML="<p class='text-center mt-5'>حدث خطأ أثناء تحميل البروفايل.</p>"; }
+  }catch(err){ 
+    console.error(err); 
+    document.body.innerHTML="<p class='text-center mt-5'>حدث خطأ أثناء تحميل البروفايل.</p>"; 
+  }
 }
 
 // ---------- Like / Unlike ----------
@@ -174,15 +187,14 @@ async function toggleLike(videoId, btn){
   }
 }
 
-// ---------- Attach Like Buttons ----------
 function attachLikeButtons(){
-  document.querySelectorAll('.col-12.col-sm-6.col-md-4').forEach(col=>{
+  document.querySelectorAll('.col-sm-6.col-md-4').forEach(col=>{
     const btn = col.querySelector('.like-btn');
     if(btn) btn.addEventListener('click', ()=> toggleLike(col.id, btn));
   });
 }
 
-// ---------- Initialize ----------
+// ---------- تشغيل ----------
 loadProfile();
 </script>
 </body>
