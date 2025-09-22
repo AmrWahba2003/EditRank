@@ -69,6 +69,7 @@ function createVideoCard(video){
 
   const likedByMe = video.likedBy && video.likedBy.includes(currentUser.id);
   const likesCount = video.likedBy ? video.likedBy.length : 0;
+  const isOwner = video.uploader?._id === currentUser.id; // تحقق إذا صاحب الفيديو هو المستخدم الحالي
 
   col.innerHTML=`
     <div class="card video-card h-100">
@@ -77,15 +78,42 @@ function createVideoCard(video){
         <h5 class="card-title text-primary">${escapeHtml(video.title||'')}</h5>
         <p class="card-text text-muted">${escapeHtml(video.description||'')}</p>
         <small class="text-secondary">التصنيف: ${escapeHtml(video.category||'')} / ${escapeHtml(video.subcategory||'')}</small>
-        <div class="actions mt-auto">
+        <div class="actions mt-auto d-flex flex-column gap-2">
           <button class="btn ${likedByMe?'btn-danger':'btn-primary'} w-100 like-btn">
             ${likedByMe?'إلغاء الإعجاب 💔':'إعجاب ❤️'} ${likesCount}
           </button>
+          ${isOwner ? `<button class="btn btn-outline-danger w-100 delete-btn">حذف الفيديو</button>` : ''}
         </div>
       </div>
     </div>`;
+
+  // إضافة حدث حذف إذا كان الزر موجود
+  const delBtn = col.querySelector('.delete-btn');
+  if(delBtn){
+    delBtn.addEventListener('click', async ()=>{
+      if(!confirm('هل تريد حذف هذا الفيديو؟')) return;
+      try{
+        const res = await fetch(`/videos/${video._id}`, {
+          method:'DELETE',
+          headers:{ Authorization:'Bearer '+token }
+        });
+        const json = await res.json();
+        if(res.ok){
+          col.remove();
+          alert('تم حذف الفيديو');
+        } else {
+          alert(json.error || 'فشل الحذف');
+        }
+      } catch(err){
+        console.error(err);
+        alert('حدث خطأ أثناء الحذف');
+      }
+    });
+  }
+
   return col;
 }
+
 
 async function loadProfile(){
   try{
